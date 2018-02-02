@@ -8,12 +8,8 @@ CFLAGS = -O2 -g -Wall -fopenmp
 %.o: %.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-aaa : $(OBJECTS)
+fli : $(OBJECTS)
 	$(CC) -o $@ $(OBJECTS) $(LIBS)
-
-fli:
-	make fli
-
 
 
 .PHONY: clean

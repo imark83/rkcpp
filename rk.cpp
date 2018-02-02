@@ -57,7 +57,6 @@ void computeStages (int nvar, 		// number of variables
 
 double estimateError(int nvar, Variable rkStage[], double h) {
 	// ESTIMATE ERROR(E2 = 0)
-	int j;
 	double error = 0.0;
 	for(int j=0; j<nvar; ++j) error = error + fabs(E1*rkStage[j][0] + E3*rkStage[2*nvar+j][0] + E4*rkStage[3*nvar+j][0] + E5*rkStage[4*nvar+j][0] + E6*rkStage[5*nvar+j][0] + E7*rkStage[6*nvar+j][0]);
 	return error * h;
@@ -73,7 +72,6 @@ void rk(int nvar, 						// number of variables of dependent variable
 	double tol) {								// parameters
 	// cardioFun f);
 
-	int i,j;
 
 	double step = 1.0e-6;	// INTEGRATION STEP SIZE
 	Variable rkStage[7*nvar];		// RK STAGES
@@ -97,11 +95,10 @@ void rk(int nvar, 						// number of variables of dependent variable
 	char endOfIntegration = 0;	// end of integration flag
 
 
-	// printf("%e", denseT);
-	// for(int j=0; j<nvar; ++j)
-	// 	printf(" %e", x[j]);
-	// printf("\n");
-
+	std::cout << denseT;
+	for(int j=0; j<nvar; ++j)
+		std::cout << "  " << x[j];
+	std::cout << std::endl;
 
 	// MAIN LOOP
 	while(!endOfIntegration) {
@@ -134,15 +131,14 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 
 		// DENSE OUTPUT
-		// while (denseT + denseStep - t - step < 1.0e-15) {
-		// 	denseT += denseStep;
-		// 	double th = (denseT - t) / step;
-		// 	std::cout << "denseT";
-		// 	for(int j=0; j<nvar; ++j)
-		// 		std::cout << "  " << DENSE_EVAL(j,th);
-    //
-		// 	std::cout << std::endl;
-		// }
+		while (denseT + denseStep - t - step < 1.0e-15) {
+			denseT += denseStep;
+			double th = (denseT - t) / step;
+			std::cout << denseT;
+			for(int j=0; j<nvar; ++j)
+				std::cout << "  " << DENSE_EVAL(j,th);
+			std::cout << std::endl;
+		}
 
 
 		// USE THE 5TH ORDER RK TO GO AHEAD(B2 = B7 = 0)

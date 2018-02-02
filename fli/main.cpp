@@ -4,10 +4,13 @@
 #include <cstdio>
 #include <cmath>
 
+#include <sys/time.h>
+#include <sys/types.h>
+
 int nsteps = 0;
 int nrejected = 0;
 
-int N = 64;
+int N = 10;
 double yMIN = -0.5;
 double yMAX = 0.7;
 double YMIN = -0.5;
@@ -35,6 +38,11 @@ double getFLI (const Variable *x) {
 
 int main(int argc, char const *argv[]) {
   std::cout.precision(15);
+  std::cout << std::scientific;
+
+  struct timeval t0, t1;
+  gettimeofday(&t0, NULL);
+
 
   int nvar = 4;
   double *fli = (double *) malloc(N*N * sizeof(double));
@@ -60,11 +68,19 @@ int main(int argc, char const *argv[]) {
       }
     }
 	}
+  gettimeofday(&t1, NULL);
+
 
 
   FILE *fout = fopen("fli.bin", "wb");
   fwrite(fli, sizeof(double), N*N, fout);
   fclose(fout);
 
+
+  std::cerr << "nsteps = " << nsteps << std::endl;
+  std::cerr << "nrejected = " << nrejected << std::endl;
+  std::cerr << "elapsed time = "
+          << ((t1.tv_sec-t0.tv_sec) + 1.0e-6*(t1.tv_usec-t0.tv_usec))
+          << std::endl;
   return 0;
 }
