@@ -15,4 +15,4 @@ fli : $(OBJECTS)
 .PHONY: clean
 
 clean:
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS) fli
