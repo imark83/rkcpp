@@ -106,9 +106,6 @@ void rk(int nvar, 						// number of variables of dependent variable
 		computeStages(nvar, rkStage, x, t, step, pars);
 		double error = estimateError(nvar, rkStage, step);
 
-    std::cerr << "error = " << error << std::endl;
-    std::cerr << "step = " << step << std::endl;
-
 		// compute norm of x
 		double normX = fabs(x[0][0]);
 		for(int j=1; j<nvar; ++j) normX += fabs(x[j][0]);
