@@ -195,6 +195,58 @@ Variable_<T> exp(const Variable_<T> &op) {
 }
 
 
+// division
+template <class T>
+Variable_<T> operator/(const Variable_<T> &op1, const Variable_<T> &op2) {
+  if(op1.nder != op2.nder) {
+    std::cerr << "Dimensions missmatch" << std::endl;
+    exit(1);
+  }
+  Variable_<T> rop(op1.nder);
+  rop[0] = op1[0] / op2[0];
+  T aux = op2[0]*op2[0];
+  for(int i=1; i<=op.nder; ++i)
+    rop[i] = (op1[i]*op2[0] - op2[i]*op1[0]) / aux;
+  return rop;
+}
+
+template <class T>
+Variable_<T> operator/(T op2, const Variable_<T> &op1) {
+  Variable_<T> rop(op1.nder);
+  rop[0] = op2/op1[0];
+  T aux = op1[0]*op1[0];
+  for(int i=1; i<=rop.nder; ++i)
+    rop[i] = ((-op2) * op1[i]) / aux;
+  return rop;
+}
+
+template <class T>
+Variable_<T> operator/(const Variable_<T> &op1, T op2) {
+  Variable_<T> rop(op1.nder);
+  for(int i=0; i<=nder; ++i)
+    rop[i] = op1[i]/op2;
+  return rop;
+}
+
+template <class T>
+Variable_<T> log(const Variable_<T> &op) {
+  Variable_<T> rop(op.nder);
+  rop[0] = log(op[0]);
+  for(int i=1; i<=nder; ++i)
+    rop[i] = op[i]/op[0];
+  return rop;
+}
+
+template <class T>
+Variable_<T> pow(const Variable_<T> op1, T op2) {
+  Variable_<T> rop(op1.nder);
+  rop[0] = pow(op1[0],op2);
+  for(int i=1; i<=nder; ++i)
+    rop[i] = (op2) * pow(op1[0], op2-1.0) * op1[i];
+}
+
+
+
 typedef Variable_<double> Variable;
 
 
