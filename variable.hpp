@@ -216,6 +216,22 @@ Variable_<T> operator*(T op2, const Variable_<T> &op1) {
 }
 
 template <class T>
+Variable_<T> operator*(const Variable_<T> &op1, int op2) {
+  Variable_<T> rop(op1.nder);
+  for(int i=0; i<=rop.nder; ++i)
+    rop[i] = op1[i] * op2;
+  return rop;
+}
+
+template <class T>
+Variable_<T> operator*(int op2, const Variable_<T> &op1) {
+  Variable_<T> rop(op1.nder);
+  for(int i=0; i<=rop.nder; ++i)
+    rop[i] = op1[i] * op2;
+  return rop;
+}
+
+template <class T>
 Variable_<T> exp(const Variable_<T> &op) {
   Variable_<T> rop(op.nder);
   rop[0] = exp(op[0]);
@@ -251,6 +267,24 @@ Variable_<T> operator/(T op2, const Variable_<T> &op1) {
 
 template <class T>
 Variable_<T> operator/(const Variable_<T> &op1, T op2) {
+  Variable_<T> rop(op1.nder);
+  for(int i=0; i<=op1.nder; ++i)
+    rop[i] = op1[i]/op2;
+  return rop;
+}
+
+template <class T>
+Variable_<T> operator/(int op2, const Variable_<T> &op1) {
+  Variable_<T> rop(op1.nder);
+  rop[0] = op2/op1[0];
+  T aux = op1[0]*op1[0];
+  for(int i=1; i<=rop.nder; ++i)
+    rop[i] = ((-op2) * op1[i]) / aux;
+  return rop;
+}
+
+template <class T>
+Variable_<T> operator/(const Variable_<T> &op1, int op2) {
   Variable_<T> rop(op1.nder);
   for(int i=0; i<=op1.nder; ++i)
     rop[i] = op1[i]/op2;
