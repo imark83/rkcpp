@@ -90,7 +90,6 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 	f(t, rkStage, rkStage, pars);
 
-
 	double fac;									// step size correction factor
 	char endOfIntegration = 0;	// end of integration flag
 
@@ -105,6 +104,7 @@ void rk(int nvar, 						// number of variables of dependent variable
 		++nsteps;
 		computeStages(nvar, rkStage, x, t, step, pars);
 		double error = estimateError(nvar, rkStage, step);
+
 
 		// compute norm of x
 		double normX = fabs(x[0][0]);
@@ -146,10 +146,10 @@ void rk(int nvar, 						// number of variables of dependent variable
 		t += step;
 
 
-		// printf("%.10e", t);
-		// for(int j=0; j<nvar; ++j)
-		// printf(" %.10e", x[j].x[0]);
-		// printf("\n");
+		printf("%.10e", t);
+		for(int j=0; j<nvar; ++j)
+		printf(" %.10e", x[j].x[1]);
+		printf("\n");
 
 		// ESTIMATE FACTOR FOR NEXT STEP SIZE
 		fac = 0.8*pow((tol/error), 0.2);	// multiplier for next step size

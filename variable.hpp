@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cmath>
 
 template <class T>
 class Variable_ {
@@ -106,28 +107,28 @@ Variable_<T> operator+(const Variable_<T> &op1, const Variable_<T> &op2) {
 template <class T>
 Variable_<T> operator+(const Variable_<T> &op1, T op2) {
   Variable_<T> rop(op1);
-  rop[0] = rop[0] + op2;
+  rop[0] = op1[0] + op2;
   return rop;
 }
 
 template <class T>
 Variable_<T> operator+(T op2, const Variable_<T> &op1) {
   Variable_<T> rop(op1);
-  rop[0] = rop[0] + op2;
+  rop[0] = op1[0] + op2;
   return rop;
 }
 
 template <class T>
 Variable_<T> operator+(const Variable_<T> &op1, int op2) {
   Variable_<T> rop(op1);
-  rop[0] = rop[0] + op2;
+  rop[0] = op1[0] + op2;
   return rop;
 }
 
 template <class T>
 Variable_<T> operator+(int op2, const Variable_<T> &op1) {
   Variable_<T> rop(op1);
-  rop[0] = rop[0] + op2;
+  rop[0] = op1[0] + op2;
   return rop;
 }
 
@@ -241,7 +242,6 @@ Variable_<T> exp(const Variable_<T> &op) {
   return rop;
 }
 
-
 // division
 template <class T>
 Variable_<T> operator/(const Variable_<T> &op1, const Variable_<T> &op2) {
@@ -322,6 +322,19 @@ Variable_<T> pow(const Variable_<T> op1, int op2) {
   return rop;
 }
 
+
+
+// FABS (WITH NAN :) )
+template <class T>
+Variable_<T> fabs(const Variable_<T> &op) {
+  Variable_<T> rop(op);
+  if(op[0] < 0) for(int i=0; i<=op.nder; ++i)
+    rop[i] = -rop[i];
+  if(op[0] == 0) for(int i=0; i<=op.nder; ++i)
+    rop[i] = T((double) NAN);
+
+  return rop;
+}
 
 
 typedef Variable_<double> Variable;
