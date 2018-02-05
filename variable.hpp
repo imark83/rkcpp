@@ -205,7 +205,7 @@ Variable_<T> operator/(const Variable_<T> &op1, const Variable_<T> &op2) {
   Variable_<T> rop(op1.nder);
   rop[0] = op1[0] / op2[0];
   T aux = op2[0]*op2[0];
-  for(int i=1; i<=op.nder; ++i)
+  for(int i=1; i<=op1.nder; ++i)
     rop[i] = (op1[i]*op2[0] - op2[i]*op1[0]) / aux;
   return rop;
 }
@@ -223,7 +223,7 @@ Variable_<T> operator/(T op2, const Variable_<T> &op1) {
 template <class T>
 Variable_<T> operator/(const Variable_<T> &op1, T op2) {
   Variable_<T> rop(op1.nder);
-  for(int i=0; i<=nder; ++i)
+  for(int i=0; i<=op1.nder; ++i)
     rop[i] = op1[i]/op2;
   return rop;
 }
@@ -232,7 +232,7 @@ template <class T>
 Variable_<T> log(const Variable_<T> &op) {
   Variable_<T> rop(op.nder);
   rop[0] = log(op[0]);
-  for(int i=1; i<=nder; ++i)
+  for(int i=1; i<=op.nder; ++i)
     rop[i] = op[i]/op[0];
   return rop;
 }
@@ -241,7 +241,7 @@ template <class T>
 Variable_<T> pow(const Variable_<T> op1, T op2) {
   Variable_<T> rop(op1.nder);
   rop[0] = pow(op1[0],op2);
-  for(int i=1; i<=nder; ++i)
+  for(int i=1; i<=op1.nder; ++i)
     rop[i] = (op2) * pow(op1[0], op2-1.0) * op1[i];
 }
 
