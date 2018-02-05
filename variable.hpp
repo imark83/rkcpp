@@ -237,6 +237,8 @@ Variable_<T> exp(const Variable_<T> &op) {
   rop[0] = exp(op[0]);
   for(int i=0; i<=op.nder; ++i)
     rop[i] = exp(op[0]) * op[i];
+
+  return rop;
 }
 
 
@@ -306,6 +308,8 @@ Variable_<T> pow(const Variable_<T> op1, T op2) {
   rop[0] = pow(op1[0],op2);
   for(int i=1; i<=op1.nder; ++i)
     rop[i] = (op2) * pow(op1[0], op2-1.0) * op1[i];
+
+  return rop;
 }
 
 
