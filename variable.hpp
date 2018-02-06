@@ -77,10 +77,11 @@ template <class T>
 std::ostream &operator<<(std::ostream &output, const Variable_<T> &op) {
   output << op[0];
   if (op.nder) {
-    output << " (" << op[1];
+    // output << " (" << op[1];
+    output << " " << op[1];
     for(int i=2; i<op.nder+1; ++i)
       output << ", " << op[i];
-    output << ")";
+    // output << ")";
   }
 
   return output;
