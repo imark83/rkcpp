@@ -20,13 +20,14 @@ void computeStages (int nvar, 		// number of variables
 			// cardioFun f);
 
 //
-void rk(int nvar, 								// number of variables of dependent variable
-			Variable x[],			 					// dependent variable
-			double t0, 									// initial time
-			double tf, 									// end time
-			double denseStep,						// dense step for output
-			double *pars, 							// parameters
-			double tol);								// parameters
-			// cardioFun f);
+void rk(int nvar, 						// number of variables of dependent variable
+	Variable x[], 							// dependent variable
+	double t0, 									// initial time
+	double tf, 									// end time
+	double denseStep,						// dense step for output
+	double *pars, 							// parameters
+	double tol,									// parameters
+	int event,									// variable to compute poincare sections. -1 none
+	double eventVal);						// poincare section value
 
 #endif

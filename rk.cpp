@@ -69,7 +69,9 @@ void rk(int nvar, 						// number of variables of dependent variable
 	double tf, 									// end time
 	double denseStep,						// dense step for output
 	double *pars, 							// parameters
-	double tol) {								// parameters
+	double tol,									// parameters
+	int event,									// variable to compute poincare sections. -1 none
+	double eventVal) {					// poincare section value
 	// cardioFun f);
 
 
@@ -82,7 +84,8 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 	// VARIABLES FOR SPIKE NUMBER COMPUTATION
 	Variable xNext[nvar];
-	// double eventT, eventX[nvar];
+	double eventT;
+	Variable eventX[nvar];
 
 
 	// INITIALIZE FSAL STAGE(store in stage 0)
@@ -128,6 +131,40 @@ void rk(int nvar, 						// number of variables of dependent variable
 		for(int j=0; j<nvar; ++j) xNext[j] = x[j] + step * (B1*rkStage[j] +
 			 		B3*rkStage[2*nvar+j] + B4*rkStage[3*nvar+j] + B5*rkStage[4*nvar+j] +
 					B6*rkStage[5*nvar+j]);
+
+		// POINCARE SECTION
+		if(event>=0)
+			if ((x[event][0]-eventVal)*(xNext[event][0]-eventVal) < 0.0) {
+				Variable x_L, x_M, x_R;
+				double th_L=0.0, th_M=0.5, th_R=1.0;
+				x_L = x[event];
+				x_M = DENSE_EVAL(event,th_M);
+				x_R = xNext[event];
+
+				double err = fabs(x_M[0] - eventVal);
+				int numIter = 0;
+				while(err > 1.0e-8 && numIter++ < 50) {
+					if((x_M[0]-eventVal)*(x_L[0]-eventVal) < 0) {
+						x_R = x_M;
+						th_R = th_M;
+						th_M = 0.5*(th_L+th_R);
+						x_M = DENSE_EVAL(event,th_M);
+					} else {
+						x_L = x_M;
+						th_L = th_M;
+						th_M = 0.5*(th_L+th_R);
+						x_M = DENSE_EVAL(event,th_M);
+					}
+					err = fabs(x_M[0] - eventVal);
+				}
+				for(int j=0; j<nvar; ++j)
+					eventX[j] = DENSE_EVAL(j,th_M);
+				eventT = t + th_M*step;
+				std::cout << eventT;
+				for(int j=0; j<nvar; ++j)
+					std::cout << "  " << eventX[j];
+				std::cout << std::endl;
+			}
 
 
 		// DENSE OUTPUT
