@@ -1,18 +1,92 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <iostream>
+#include <cstdio>
 #include <math.h>
 #include "rk.hpp"
 #include "rk_coefs.h"
 #include "fun.hpp"
+#include <cstring>
+#include <cstdlib>
 
 
 extern int nsteps;
 extern int nrejected;
 
 
+
+
+class Buffer {
+public:
+  size_t n;
+  double *T;
+  double *V;
+  size_t minPos;
+  size_t status;
+  double defaultV;
+
+  Buffer(size_t n, double defaultV)
+        : n(n), minPos(0), status(0), defaultV(defaultV) {
+    T = new double[n];
+    V = new double[n];
+  }
+  Buffer(const double *T, const double *V, size_t n)
+        : n(n), minPos(0), status(n), defaultV(0) {
+    this->T = new double[n];
+    this->V = new double[n];
+    memcpy(this->T, T, n*sizeof(double));
+    memcpy(this->V, V, n*sizeof(double));
+    minPos = 0;
+  }
+  ~Buffer() {
+    delete [] T;
+    delete [] V;
+  }
+
+  size_t getPos(double t) {
+    if(t<T[(minPos)] || t>T[(n-1+minPos)%n]) {
+      std::cerr << "Value out of Range in Buffer" << std::endl;
+      exit(1);
+    }
+    size_t a=0, b=n-1, c;
+    while(b-a > 1) {
+      c = (b+a)/2;
+      if(T[(c+minPos)%n] < t)
+        a = c;
+      else
+        b = c;
+    }
+    return a;
+  }
+
+  double operator()(double t) {
+    if (status < n) return defaultV;
+    size_t a = getPos(t) + minPos;
+    size_t b = (a+1)%n;
+    std::cout << a << ", " << b << std::endl;
+    std::cout << V[a] << ", " << V[b] << std::endl;
+    double th = (t-T[a])/(T[b]-T[a]);
+    return V[a] + th*(V[b]-V[a]);
+  }
+  void push_back(double t, double v) {
+    if (status < n) {
+      std::cout << "push_back" << std::endl;
+      T[status] = t;
+      V[status] = v;
+      ++status;
+    } else {
+      std::cout << "push_cyclic" << std::endl;
+      T[minPos] = t;
+      V[minPos] = v;
+      minPos = (minPos+1)%n;
+    }
+  }
+
+};
+
+
+
 void computeStages (int nvar, 		// number of variables
-			Variable rkStage[],					// RK stages
-			Variable x[],								// integrated variable
+			double rkStage[],					// RK stages
+			double x[],								// integrated variable
 			double t,										// integration variable
 	 		double h, 									// step size
 			double *pars) {							// parameters
@@ -55,16 +129,16 @@ void computeStages (int nvar, 		// number of variables
 
 
 
-double estimateError(int nvar, Variable rkStage[], double h) {
+double estimateError(int nvar, double rkStage[], double h) {
 	// ESTIMATE ERROR(E2 = 0)
 	double error = 0.0;
-	for(int j=0; j<nvar; ++j) error = error + fabs(E1*rkStage[j][0] + E3*rkStage[2*nvar+j][0] + E4*rkStage[3*nvar+j][0] + E5*rkStage[4*nvar+j][0] + E6*rkStage[5*nvar+j][0] + E7*rkStage[6*nvar+j][0]);
+	for(int j=0; j<nvar; ++j) error = error + fabs(E1*rkStage[j] + E3*rkStage[2*nvar+j] + E4*rkStage[3*nvar+j] + E5*rkStage[4*nvar+j] + E6*rkStage[5*nvar+j] + E7*rkStage[6*nvar+j]);
 	return error * h;
 }
 
 //
 void rk(int nvar, 						// number of variables of dependent variable
-	Variable x[], 							// dependent variable
+	double x[], 							// dependent variable
 	double t0, 									// initial time
 	double tf, 									// end time
 	double denseStep,						// dense step for output
@@ -76,16 +150,16 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 
 	double step = 1.0e-6;	// INTEGRATION STEP SIZE
-	Variable rkStage[7*nvar];		// RK STAGES
+	double rkStage[7*nvar];		// RK STAGES
 	double t = t0;							// integration time
 	double denseT = t0;							// time for dense output
 
 
 
 	// VARIABLES FOR SPIKE NUMBER COMPUTATION
-	Variable xNext[nvar];
+	double xNext[nvar];
 	double eventT;
-	Variable eventX[nvar];
+	double eventX[nvar];
 
 
 	// INITIALIZE FSAL STAGE(store in stage 0)
@@ -110,8 +184,8 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 
 		// compute norm of x
-		double normX = fabs(x[0][0]);
-		for(int j=1; j<nvar; ++j) normX += fabs(x[j][0]);
+		double normX = fabs(x[0]);
+		for(int j=1; j<nvar; ++j) normX += fabs(x[j]);
 
 		// CHECK IF WE REJECT STEP
 		if(error > tol || error > tol*normX) {
@@ -134,17 +208,17 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 		// POINCARE SECTION
 		if(event>=0)
-			if ((x[event][0]-eventVal)*(xNext[event][0]-eventVal) < 0.0) {
-				Variable x_L, x_M, x_R;
+			if ((x[event]-eventVal)*(xNext[event]-eventVal) < 0.0) {
+				double x_L, x_M, x_R;
 				double th_L=0.0, th_M=0.5, th_R=1.0;
 				x_L = x[event];
 				x_M = DENSE_EVAL(event,th_M);
 				x_R = xNext[event];
 
-				double err = fabs(x_M[0] - eventVal);
+				double err = fabs(x_M - eventVal);
 				int numIter = 0;
 				while(err > 1.0e-8 && numIter++ < 50) {
-					if((x_M[0]-eventVal)*(x_L[0]-eventVal) < 0) {
+					if((x_M-eventVal)*(x_L-eventVal) < 0) {
 						x_R = x_M;
 						th_R = th_M;
 						th_M = 0.5*(th_L+th_R);
@@ -155,7 +229,7 @@ void rk(int nvar, 						// number of variables of dependent variable
 						th_M = 0.5*(th_L+th_R);
 						x_M = DENSE_EVAL(event,th_M);
 					}
-					err = fabs(x_M[0] - eventVal);
+					err = fabs(x_M - eventVal);
 				}
 				for(int j=0; j<nvar; ++j)
 					eventX[j] = DENSE_EVAL(j,th_M);

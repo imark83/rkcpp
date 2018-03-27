@@ -12,8 +12,8 @@
 #ifndef __FUN_HPP__
 #define __FUN_HPP__
 
-#include "variable.hpp"
+// #include "variable.hpp"
 
-void f(double t, Variable *rop, Variable *x, double *p);
+void f(double t, double *rop, double *x, double *p);
 
 #endif

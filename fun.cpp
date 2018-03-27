@@ -1,13 +1,12 @@
 #include <iostream>
-#include "variable.hpp"
 
 
 
 
 // SECOND MEMBER FOR HENON-HEILES HAMILTONIAN SYSTEM
-void f(double t, Variable *rop, Variable *op, double *p) {
+void f(double t, double *rop, double *op, double *p) {
 	int nvar = 4;
-	Variable x[nvar];
+	double x[nvar];
 	for(int i=0; i<nvar; ++i) x[i] = op[i];
 
 	// rop[0] = x[1];

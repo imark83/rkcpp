@@ -6,14 +6,14 @@
 
 // typedef void (*cardioFun)(double, double*, double*, double*);
 
-#include "variable.hpp"
+// #include "variable.hpp"
 
 #define MAX(i,j) ( ((i) > (j)) ? (i) : (j) )
 #define MIN(i,j) ( ((i) > (j)) ? (j) : (i) )
 
 void computeStages (int nvar, 		// number of variables
-			Variable rkStage[],					// RK stages
-			Variable x[],								// integrated variable
+			double rkStage[],					// RK stages
+			double x[],								// integrated variable
 			double t,										// integration variable
 	 		double h, 									// step size
 			double *pars);							// parameters
@@ -21,7 +21,7 @@ void computeStages (int nvar, 		// number of variables
 
 //
 void rk(int nvar, 						// number of variables of dependent variable
-	Variable x[], 							// dependent variable
+	double x[], 							// dependent variable
 	double t0, 									// initial time
 	double tf, 									// end time
 	double denseStep,						// dense step for output

@@ -1,4 +1,4 @@
-#include "variable.hpp"
+#include <iostream>
 #include "rk.hpp"
 #include <cmath>
 
@@ -12,7 +12,7 @@ int main(int argc, char const *argv[]) {
   std::cout << std::scientific;
 
   int nvar = 4;
-  Variable x[nvar];
+  double x[nvar];
 
   x[0] = 0.1; x[1] = 0.0;
   x[2] = 0.0; x[3] = 0.05;
