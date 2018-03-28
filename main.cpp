@@ -1,11 +1,15 @@
 #include <iostream>
-#include "rk.hpp"
 #include <cmath>
+#include "rk.hpp"
+#include "buffer.hpp"
 
 
 
 int nsteps = 0;
 int nrejected = 0;
+Buffer retard0(50000, 0.0);
+Buffer retard1(50000, 0.0);
+Buffer retard2(50000, 0.0);
 
 int main(int argc, char const *argv[]) {
   std::cout.precision(15);
@@ -28,9 +32,9 @@ int main(int argc, char const *argv[]) {
   x[11] = 0.0;
 
 
-  double pars[1] = {1.0};
+  double pars[1] = {50.0};
 
-  rk(nvar, x, 0, 1000, 1000, pars, 1.0e-8, -1, 0.0);
+  rk(nvar, x, 0, 10000, 10000, pars, 1.0e-8, -1, 0.0);
 
   std::cerr << "nsteps = " << nsteps << std::endl;
   std::cerr << "nrejected = " << nrejected << std::endl;
