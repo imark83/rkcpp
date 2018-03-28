@@ -4,85 +4,14 @@
 #include "rk.hpp"
 #include "rk_coefs.h"
 #include "fun.hpp"
-#include <cstring>
-#include <cstdlib>
-
+#include "buffer.hpp"
 
 extern int nsteps;
 extern int nrejected;
 
-
-
-
-class Buffer {
-public:
-  size_t n;
-  double *T;
-  double *V;
-  size_t minPos;
-  size_t status;
-  double defaultV;
-
-  Buffer(size_t n, double defaultV)
-        : n(n), minPos(0), status(0), defaultV(defaultV) {
-    T = new double[n];
-    V = new double[n];
-  }
-  Buffer(const double *T, const double *V, size_t n)
-        : n(n), minPos(0), status(n), defaultV(0) {
-    this->T = new double[n];
-    this->V = new double[n];
-    memcpy(this->T, T, n*sizeof(double));
-    memcpy(this->V, V, n*sizeof(double));
-    minPos = 0;
-  }
-  ~Buffer() {
-    delete [] T;
-    delete [] V;
-  }
-
-  size_t getPos(double t) {
-    if(t<T[(minPos)] || t>T[(n-1+minPos)%n]) {
-      std::cerr << "Value out of Range in Buffer" << std::endl;
-      exit(1);
-    }
-    size_t a=0, b=n-1, c;
-    while(b-a > 1) {
-      c = (b+a)/2;
-      if(T[(c+minPos)%n] < t)
-        a = c;
-      else
-        b = c;
-    }
-    return a;
-  }
-
-  double operator()(double t) {
-    if (status < n) return defaultV;
-    size_t a = getPos(t) + minPos;
-    size_t b = (a+1)%n;
-    std::cout << a << ", " << b << std::endl;
-    std::cout << V[a] << ", " << V[b] << std::endl;
-    double th = (t-T[a])/(T[b]-T[a]);
-    return V[a] + th*(V[b]-V[a]);
-  }
-  void push_back(double t, double v) {
-    if (status < n) {
-      std::cout << "push_back" << std::endl;
-      T[status] = t;
-      V[status] = v;
-      ++status;
-    } else {
-      std::cout << "push_cyclic" << std::endl;
-      T[minPos] = t;
-      V[minPos] = v;
-      minPos = (minPos+1)%n;
-    }
-  }
-
-};
-
-
+Buffer retard0(1000000, 0.0);
+Buffer retard1(1000000, 0.0);
+Buffer retard2(1000000, 0.0);
 
 void computeStages (int nvar, 		// number of variables
 			double rkStage[],					// RK stages
@@ -201,6 +130,7 @@ void rk(int nvar, 						// number of variables of dependent variable
       computeStages(nvar, rkStage, x, t, step, pars);
 		}
 
+
 		// USE THE 5TH ORDER RK TO GO AHEAD(B2 = B7 = 0)
 		for(int j=0; j<nvar; ++j) xNext[j] = x[j] + step * (B1*rkStage[j] +
 			 		B3*rkStage[2*nvar+j] + B4*rkStage[3*nvar+j] + B5*rkStage[4*nvar+j] +
@@ -257,10 +187,13 @@ void rk(int nvar, 						// number of variables of dependent variable
 		t += step;
 
 
-		// printf("%.10e", t);
-		// for(int j=0; j<nvar; ++j)
-		// printf(" %.10e", x[j].x[1]);
-		// printf("\n");
+    retard0.push_back(t, x[9]);
+    retard1.push_back(t, x[10]);
+    retard2.push_back(t, x[11]);
+
+    std::cout << step << std::endl;
+
+
 
 		// ESTIMATE FACTOR FOR NEXT STEP SIZE
 		fac = 0.8*pow((tol/error), 0.2);	// multiplier for next step size
