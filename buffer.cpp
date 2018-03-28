@@ -39,7 +39,7 @@ size_t Buffer::getPos(double t) {
 
 double Buffer::operator()(double t) {
   if (status < n) return defaultV;
-  size_t a = getPos(t) + minPos;
+  size_t a = (getPos(t) + minPos)%n;
   size_t b = (a+1)%n;
   // std::cout << a << ", " << b << std::endl;
   // std::cout << V[a] << ", " << V[b] << std::endl;
