@@ -9,9 +9,9 @@
 extern int nsteps;
 extern int nrejected;
 
-Buffer retard0(10000, 0.0);
-Buffer retard1(10000, 0.0);
-Buffer retard2(10000, 0.0);
+Buffer retard0(100000000, 0.0);
+Buffer retard1(100000000, 0.0);
+Buffer retard2(100000000, 0.0);
 
 void computeStages (int nvar, 		// number of variables
 			double rkStage[],					// RK stages
