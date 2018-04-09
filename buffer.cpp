@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <unistd.h>
 #include "buffer.hpp"
 
 Buffer::Buffer(size_t n, double defaultV)
@@ -51,6 +52,10 @@ void Buffer::push_back(double t, double v) {
     T[status] = t;
     V[status] = v;
     ++status;
+    if(status == n) {
+      std::cerr << "buffer filled!" << std::endl;
+      usleep(1000000);
+    }
   } else {
     T[minPos] = t;
     V[minPos] = v;

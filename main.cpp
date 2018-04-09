@@ -32,9 +32,13 @@ int main(int argc, char const *argv[]) {
   x[11] = 0.0;
 
 
-  double pars[1] = {50.0};
+  double pars[2] = {30.0, -25.111111111111};
 
-  rk(nvar, x, 0, 10000, 10000, pars, 1.0e-8, -1, 0.0);
+
+  double poincareThresHold = -30.0;
+
+
+  rk(nvar, x, 0, 20000, 0.05, pars, 1.0e-8, -1, poincareThresHold);
 
   std::cerr << "nsteps = " << nsteps << std::endl;
   std::cerr << "nrejected = " << nrejected << std::endl;

@@ -101,8 +101,8 @@ void rk(int nvar, 						// number of variables of dependent variable
 
 
 	std::cout << denseT;
-	for(int j=0; j<nvar; ++j)
-		std::cout << "  " << x[j];
+	for(int j=0; j<3; ++j)
+		std::cout << "  " << x[3*j];
 	std::cout << std::endl;
 
 	// MAIN LOOP
@@ -176,8 +176,8 @@ void rk(int nvar, 						// number of variables of dependent variable
 			denseT += denseStep;
 			double th = (denseT - t) / step;
 			std::cout << denseT;
-			for(int j=0; j<nvar; ++j)
-				std::cout << "  " << DENSE_EVAL(j,th);
+			for(int j=0; j<3; ++j)
+				std::cout << "  " << DENSE_EVAL(3*j,th);
 			std::cout << std::endl;
 		}
 
@@ -190,9 +190,6 @@ void rk(int nvar, 						// number of variables of dependent variable
     retard0.push_back(t, x[9]);
     retard1.push_back(t, x[10]);
     retard2.push_back(t, x[11]);
-
-    std::cout << step << std::endl;
-
 
 
 		// ESTIMATE FACTOR FOR NEXT STEP SIZE
