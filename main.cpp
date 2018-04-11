@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include "rk.hpp"
 #include "buffer.hpp"
@@ -10,9 +11,10 @@ int nrejected = 0;
 Buffer retard0(50000, 0.0);
 Buffer retard1(50000, 0.0);
 Buffer retard2(50000, 0.0);
+std::fstream fPoinc;
 
 int main(int argc, char const *argv[]) {
-  std::cout.precision(15);
+  std::cout.precision(8);
   std::cout << std::scientific;
 
   int nvar = 12;
@@ -24,7 +26,7 @@ int main(int argc, char const *argv[]) {
   x[3] = -1.5;
   x[4] = 0.0;
   x[5] = 0.0;
-  x[6] = -2.0;
+  x[6] = -20.0;
   x[7] = 0.0;
   x[8] = 0.0;
   x[9] = 0.0;
@@ -32,14 +34,15 @@ int main(int argc, char const *argv[]) {
   x[11] = 0.0;
 
 
-  double pars[2] = {30.0, -25.111111111111};
+  double pars[3] = {75, -26.77777777777, 0.005};
 
 
   double poincareThresHold = -30.0;
+  fPoinc.open("spider.txt", std::fstream::app);
 
-
-  rk(nvar, x, 0, 20000, 0.05, pars, 1.0e-8, -1, poincareThresHold);
-
+  rk(nvar, x, 0, 40000, 40000, pars, 1.0e-8, 1, poincareThresHold);
+  fPoinc << std::endl;
+  fPoinc.close();
   std::cerr << "nsteps = " << nsteps << std::endl;
   std::cerr << "nrejected = " << nrejected << std::endl;
 

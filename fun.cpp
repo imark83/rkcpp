@@ -13,8 +13,9 @@ void f(double t, double *rop, double *x, double *p) {
 
   double aux[12];
 
-  // P[0] -> DELAY
-  // P[1] -> vthKS
+  // p[0] -> DELAY
+  // p[1] -> vthKS
+  // p[2] -> g_syn
 
   double ninf, minf, cinf, taum, tauc, ICa, IK, IKS, IL, GV;
 
@@ -70,18 +71,18 @@ void f(double t, double *rop, double *x, double *p) {
   aux[8] = ((0.005) * (cinf - x[8])) * tauc;
 
   // Synapsis 1->0
-  aux[0] += -(0.015) * x[10] * (x[0] - (-70.0)) / (1.2);
+  aux[0] += -(p[2]) * x[10] * (x[0] - (-70.0)) / (1.2);
   // Synapsis 1->2
-  aux[6] += -(0.015) * x[10] * (x[6] - (-70.0)) / (1.2);
+  aux[6] += -(p[2]) * x[10] * (x[6] - (-70.0)) / (1.2);
   // Sinapsis 0->1
-  aux[3] += -(0.015*0.5) * x[9] * (x[3] - (-70.0)) / (1.2);
+  aux[3] += -(p[2]*0.5) * x[9] * (x[3] - (-70.0)) / (1.2);
   // Sinapsis 2->1
-  aux[3] += -(0.015*0.5) * x[11] * (x[3] - (-70.0)) / (1.2);
+  aux[3] += -(p[2]*0.5) * x[11] * (x[3] - (-70.0)) / (1.2);
 
   // Synapsis pasada
-  aux[0] += -(0.015) * retard0(t-p[0]) * (x[0] - (-70.0)) / (1.2);
-  aux[3] += -(0.015) * retard1(t-p[0]) * (x[3] - (-70.0)) / (1.2);
-  aux[6] += -(0.015) * retard2(t-p[0]) * (x[6] - (-70.0)) / (1.2);
+  aux[0] += -(p[2]) * retard0(t-p[0]) * (x[0] - (-70.0)) / (1.2);
+  aux[3] += -(p[2]) * retard1(t-p[0]) * (x[3] - (-70.0)) / (1.2);
+  aux[6] += -(p[2]) * retard2(t-p[0]) * (x[6] - (-70.0)) / (1.2);
 
   // Actualizar variable sinaptica de N0
   GV = (0.002) / (1 + exp(-(0.22) * (x[0] - (2.0))));

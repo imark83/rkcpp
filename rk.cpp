@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <math.h>
 #include "rk.hpp"
@@ -12,6 +13,7 @@ extern int nrejected;
 extern Buffer retard0;
 extern Buffer retard1;
 extern Buffer retard2;
+extern std::fstream fPoinc;
 
 void computeStages (int nvar, 		// number of variables
 			double rkStage[],					// RK stages
@@ -137,38 +139,42 @@ void rk(int nvar, 						// number of variables of dependent variable
 					B6*rkStage[5*nvar+j]);
 
 		// POINCARE SECTION
-		if(event>=0)
-			if ((x[event]-eventVal)*(xNext[event]-eventVal) < 0.0) {
-				double x_L, x_M, x_R;
+		if(event==1) for(int k=0; k<3; ++k) {
+			if ((x[3*k]-eventVal)*(xNext[3*k]-eventVal) < 0.0
+              && (xNext[3*k]-eventVal) > 0.0) {
+				double x_L, x_M; //, x_R;
 				double th_L=0.0, th_M=0.5, th_R=1.0;
-				x_L = x[event];
-				x_M = DENSE_EVAL(event,th_M);
-				x_R = xNext[event];
+				x_L = x[3*k];
+				x_M = DENSE_EVAL(3*k,th_M);
+				// x_R = xNext[event];
 
 				double err = fabs(x_M - eventVal);
 				int numIter = 0;
 				while(err > 1.0e-8 && numIter++ < 50) {
 					if((x_M-eventVal)*(x_L-eventVal) < 0) {
-						x_R = x_M;
+						// x_R = x_M;
 						th_R = th_M;
 						th_M = 0.5*(th_L+th_R);
-						x_M = DENSE_EVAL(event,th_M);
+						x_M = DENSE_EVAL(3*k,th_M);
 					} else {
 						x_L = x_M;
 						th_L = th_M;
 						th_M = 0.5*(th_L+th_R);
-						x_M = DENSE_EVAL(event,th_M);
+						x_M = DENSE_EVAL(3*k,th_M);
 					}
 					err = fabs(x_M - eventVal);
 				}
-				for(int j=0; j<nvar; ++j)
-					eventX[j] = DENSE_EVAL(j,th_M);
+				// for(int j=0; j<nvar; ++j)
+				// 	eventX[j] = DENSE_EVAL(j,th_M);
+
 				eventT = t + th_M*step;
-				std::cout << eventT;
-				for(int j=0; j<nvar; ++j)
-					std::cout << "  " << eventX[j];
-				std::cout << std::endl;
+        fPoinc << k << "  " << eventT << "  ";
+				// std::cout << eventT;
+				// for(int j=0; j<3; ++j)
+				// 	std::cout << "  " << eventX[3*j];
+				// std::cout << std::endl;
 			}
+    }
 
 
 		// DENSE OUTPUT
