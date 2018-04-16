@@ -1,18 +1,38 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <thread>
+#include <utility>
+#include <queue>
+#include <deque>
+#include <atomic>
 #include "rk.hpp"
-
 
 
 int nsteps = 0;
 int nrejected = 0;
 
-std::fstream fPoinc;
+constexpr int M = 100; // Number of points per dimension
 
-int main(int argc, char const *argv[]) {
-  std::cout.precision(8);
-  std::cout << std::scientific;
+
+using namespace std;
+
+
+class Task {
+public:
+    Task(double phi12, double phi13) : phi12{phi12}, phi13{phi13}, result() {}
+    Task(Task&& op) {
+        phi12 = op.phi12;
+        phi13 = op.phi13;
+        result = std::move(op.result);
+    }
+    
+    double phi12;
+    double phi13;
+    deque<pair<int, double>> result;
+};
+
+void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
 
   int nvar = 12;
   double y[nvar];
@@ -48,7 +68,7 @@ int main(int argc, char const *argv[]) {
   retard[0].resetTime();
   retard[1].resetTime();
   retard[2].resetTime();
-  std::cout << "P = " << P << std::endl;
+//  std::cout << "P = " << P << std::endl;
   canonicalBuffer = retard[0];
 
 
@@ -59,7 +79,7 @@ int main(int argc, char const *argv[]) {
     x[i] = z[i] = y[i];
   }
   x[9] = z[9] = y[9];
-  rk(nvar, z, 0.0, (P*(1.0-0.45)), (P*(1.0-0.15)),
+  rk(nvar, z, 0.0, (P*(1.0-phi12)), (P*(1.0-phi12)),
       pars, 1.0e-8, 0, poincareThresHold, retard);
   retard[0].resetTime();
   retard[1].resetTime();
@@ -75,7 +95,7 @@ int main(int argc, char const *argv[]) {
     z[i] = y[i];
   }
   retard[0] = canonicalBuffer;
-  rk(nvar, z, 0.0, (P*(1.0-0.55)), (P*(1.0-0.85)),
+  rk(nvar, z, 0.0, (P*(1.0-phi13)), (P*(1.0-phi13)),
       pars, 1.0e-8, 0, poincareThresHold, retard);
   retard[0].resetTime();
   retard[1].resetTime();
@@ -90,14 +110,65 @@ int main(int argc, char const *argv[]) {
 
 
   pars[2] = 0.004;
-  fPoinc.open("spider.txt", std::fstream::app);
   rk(nvar, x, 0.0, 5000, 0.05, pars,
-        1.0e-8, 0, poincareThresHold, retard);
-  fPoinc << std::endl;
-  fPoinc.close();
-  std::cerr << "nsteps = " << nsteps << std::endl;
-  std::cerr << "nrejected = " << nrejected << std::endl;
+        1.0e-8, 2, poincareThresHold, retard, addressof(result));
+
+  return;
+}
 
 
-  return 0;
+int main(int argc, char** argv) {
+    deque<Task> tasks;
+    
+    // Setup tasks
+    
+    for(int i = 0; i<M; i++) {
+        for(int j = 0; j<M; j++) {
+            tasks.emplace_back(Task(static_cast<double>(i)/M,
+                                    static_cast<double>(j)/M));
+        }
+    }
+    
+    
+    // Initial position for the work
+    auto pos = tasks.begin();
+    auto end = tasks.end();
+    mutex pos_mutex;
+    
+    // Setup workers
+    vector<thread> workers(thread::hardware_concurrency());
+    for(auto& th : workers)
+        th = thread([&pos, end, &pos_mutex]{
+            Task* T;
+            
+            while(true) {
+                { // Thread safe part
+                    lock_guard<mutex> lock(pos_mutex);
+                    if(pos == end) return;
+                    T = addressof(*pos++);
+                    //std::cout << std::this_thread::get_id() << " " << T->phi12*M << " " << T->phi13*M << endl;
+                }
+                
+                // Do the work
+                worker(T->phi12, T->phi13, T->result);
+            }
+            
+        });
+    
+    // Wait 'til everything ends
+    for(auto& th : workers)
+        th.join();
+    
+    // OK... print it on screen!
+    for(auto& T : tasks) {
+        cout << T.phi12 << "\t"
+             << T.phi13;
+        for(auto& pto : T.result)
+            cout << "\t" << pto.first << "\t" << pto.second;
+        cout << endl;
+    }
+
+    
+    
+    return 0;
 }

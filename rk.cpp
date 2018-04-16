@@ -6,10 +6,12 @@
 #include "rk_coefs.hpp"
 #include "fun.hpp"
 
+using namespace std;
+
 extern int nsteps;
 extern int nrejected;
 
-extern std::fstream fPoinc;
+
 
 void computeStages (int nvar, 		// number of variables
 			double rkStage[],					// RK stages
@@ -65,7 +67,8 @@ double estimateError(int nvar, double rkStage[], double h) {
 }
 
 void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
-        double rkStage[], double eventVal) {
+                   double rkStage[], double eventVal,
+                   deque<pair<int, double>>* results) {
 
 	double eventT;
 	double eventX[nvar];
@@ -98,12 +101,13 @@ void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
         eventX[j] = denseEval(nvar, rkStage, x, step, j,th_M);
 
       eventT = t + th_M*step;
-      fPoinc << k << "  " << eventT << "  ";
+      results->push_back(make_pair(k, eventT));
+        
       // std::cout << k << "  " << eventT << "  ";
-      std::cout << eventT;
-      for(int j=0; j<3; ++j)
-        std::cout << "  " << eventX[3*j];
-      std::cout << std::endl;
+//      std::cout << eventT;
+//      for(int j=0; j<3; ++j)
+//        std::cout << "  " << eventX[3*j];
+//      std::cout << std::endl;
     }
   }
   return;
@@ -144,11 +148,11 @@ double singlePoincare (int nvar, double t, double step, double x[],
       // eventX[j] = denseEval(nvar, rkStage, x, step, j,th_M);
 
     if(lastT < 0) {
-      std::cout << "static = " << lastT << std::endl;
+//      std::cout << "static = " << lastT << std::endl;
       lastT = t + th_M*step;
       return -1.0;
     }
-    std::cout << "static = " << lastT << std::endl;
+//    std::cout << "static = " << lastT << std::endl;
     return t + th_M*step - lastT;
   }
   return -1.0;
@@ -165,7 +169,9 @@ double rk(int nvar, 					// number of variables of dependent variable
 	double tol,									// parameters
 	int event,									// variable to compute poincare sections. -1 none
 	double eventVal,   					// poincare section value
-  Buffer *retard) {
+    Buffer *retard,
+    deque<pair<int, double>>* results
+          ) {
 	// cardioFun f);
 
 
@@ -189,10 +195,10 @@ double rk(int nvar, 					// number of variables of dependent variable
 	char endOfIntegration = 0;	// end of integration flag
 
 
-	std::cout << denseT;
-	for(int j=0; j<3; ++j)
-		std::cout << "  " << x[3*j];
-	std::cout << std::endl;
+//    std::cout << denseT;
+//    for(int j=0; j<3; ++j)
+//        std::cout << "  " << x[3*j];
+//    std::cout << std::endl;
 
 	// MAIN LOOP
 	while(!endOfIntegration) {
@@ -233,16 +239,16 @@ double rk(int nvar, 					// number of variables of dependent variable
       }
     }
     if(event==2)
-    fullPoincare (nvar, t, step, x, xNext, rkStage, eventVal);
+        fullPoincare (nvar, t, step, x, xNext, rkStage, eventVal, results);
 
 		// DENSE OUTPUT
 		while (denseT + denseStep - t - step < 1.0e-15) {
 			denseT += denseStep;
 			double th = (denseT - t) / step;
-			std::cout << denseT;
-			for(int j=0; j<3; ++j)
-				std::cout << "  " << denseEval(nvar, rkStage, x, step, 3*j,th);
-			std::cout << std::endl;
+//            std::cout << denseT;
+//            for(int j=0; j<3; ++j)
+//                std::cout << "  " << denseEval(nvar, rkStage, x, step, 3*j,th);
+//            std::cout << std::endl;
 		}
 
 

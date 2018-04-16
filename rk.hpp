@@ -2,6 +2,9 @@
 #ifndef __RK_HPP__
 #define __RK_HPP__
 #include "buffer.hpp"
+#include <queue>
+#include <utility>
+
 // performs an RK step. Returns -1 if rejected,
 // otherwise returns FACTOR for next step size
 
@@ -31,6 +34,6 @@ double rk(int nvar, 					// number of variables of dependent variable
 	double tol,									// parameters
 	int event,									// variable to compute poincare sections. -1 none
 	double eventVal,						// poincare section value
-  Buffer *retard);
+          Buffer *retard, std::deque<std::pair<int, double>>* results = nullptr);
 
 #endif
