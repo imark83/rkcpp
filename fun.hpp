@@ -14,6 +14,6 @@
 
 // #include "variable.hpp"
 
-void f(double t, double *rop, double *x, double *p);
+void f(double t, double *rop, double *x, double *p, Buffer retard[]);
 
 #endif

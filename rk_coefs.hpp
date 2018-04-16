@@ -1,4 +1,5 @@
-
+#ifndef __RK_COEFS_HPP__
+#define __RK_COEFS_HPP__ value
 // RK COEFICIENTS
 #define A21	( 2.00000000000000E-01)
 #define A31	( 7.50000000000000E-02)
@@ -56,5 +57,10 @@
 #define CB5(th) (((-1.32532429245283E+00*(th) + 1.26084905660377E+00)*(th) - 2.57900943396226E-01)*(th)*(th))
 #define CB6(th)	(((2.22619047619048E+00*(th) - 3.03809523809524E+00)*(th) + 9.42857142857143E-01)*(th)*(th))
 
+inline double denseEval(int nvar, double rkStage[], double x[], double step,
+            int j, double th) {
+  return x[j] + step*(CB1(th)*rkStage[j] + CB3(th)*rkStage[2*nvar+j] + CB4(th)*rkStage[3*nvar+j] + CB5(th)*rkStage[4*nvar+j] + CB6(th)*rkStage[5*nvar+j]);
 
-#define DENSE_EVAL(j,th) (x[j] + step*(CB1(th)*rkStage[j] + CB3(th)*rkStage[2*nvar+j] + CB4(th)*rkStage[3*nvar+j] + CB5(th)*rkStage[4*nvar+j] + CB6(th)*rkStage[5*nvar+j]))
+}
+
+#endif

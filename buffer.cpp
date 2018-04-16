@@ -4,11 +4,18 @@
 #include <unistd.h>
 #include "buffer.hpp"
 
+Buffer::Buffer()
+      : n(0), minPos(0), status(0), defaultV(0.0) {
+  T = new double[1];
+  V = new double[1];
+}
+
 Buffer::Buffer(size_t n, double defaultV)
       : n(n), minPos(0), status(0), defaultV(defaultV) {
   T = new double[n];
   V = new double[n];
 }
+
 Buffer::Buffer(const double *T, const double *V, size_t n)
       : n(n), minPos(0), status(n), defaultV(0) {
   this->T = new double[n];
@@ -17,10 +24,43 @@ Buffer::Buffer(const double *T, const double *V, size_t n)
   memcpy(this->V, V, n*sizeof(double));
   minPos = 0;
 }
+
+Buffer::Buffer(const Buffer &op)
+      : n(op.n), minPos(op.minPos), status(op.status), defaultV(op.defaultV) {
+  this->T = new double[n];
+  this->V = new double[n];
+  memcpy(this->T, op.T, n*sizeof(double));
+  memcpy(this->V, op.V, n*sizeof(double));
+}
+
+
 Buffer::~Buffer() {
   delete [] T;
   delete [] V;
 }
+
+Buffer & Buffer::operator=(const Buffer &op) {
+  this->n = op.n;
+  this->minPos = op.minPos;
+  this->status = op.status;
+  this->defaultV = op.defaultV;
+  delete [] this->T;
+  delete [] this->V;
+
+  this->T = new double[n];
+  this->V = new double[n];
+  memcpy(this->T, op.T, n*sizeof(double));
+  memcpy(this->V, op.V, n*sizeof(double));
+  return (*this);
+}
+
+void Buffer::resetTime() {
+  double t = T[(minPos-1)%n];
+  for(size_t i=0; i<n; ++i) T[i] -= t;
+  return;
+}
+
+
 
 size_t Buffer::getPos(double t) {
   if(t<T[(minPos)] || t>T[(n-1+minPos)%n]) {
@@ -54,7 +94,7 @@ void Buffer::push_back(double t, double v) {
     ++status;
     if(status == n) {
       std::cerr << "buffer filled!" << std::endl;
-      usleep(1000000);
+      // usleep(1000000);
     }
   } else {
     T[minPos] = t;
