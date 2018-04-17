@@ -118,7 +118,8 @@ void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
 
 
 int main(int argc, char** argv) {
-    deque<Task> tasks;
+    vector<Task> tasks;
+    tasks.reserve(M*M);
     
     // Setup tasks
     
