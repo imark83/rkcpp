@@ -12,7 +12,7 @@
 int nsteps = 0;
 int nrejected = 0;
 
-constexpr int M = 100; // Number of points per dimension
+constexpr int M = 30; // Number of points per dimension
 
 
 using namespace std;
@@ -20,7 +20,7 @@ using namespace std;
 
 class Task {
 public:
-    Task(double phi12, double phi13) : phi12{phi12}, phi13{phi13}, result() {}
+    Task(double phi12, double phi13, double retard) : retard{retard}, phi12{phi12}, phi13{phi13}, result() {}
     Task(Task&& op) {
         phi12 = op.phi12;
         phi13 = op.phi13;
@@ -29,15 +29,16 @@ public:
     
     double phi12;
     double phi13;
+    double retard;
     deque<pair<int, double>> result;
 };
 
-void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
+void worker(double phi12, double phi13, double r, deque<pair<int, double>>& result) {
 
   int nvar = 12;
   double y[nvar];
   // Mierdas de Buffers
-  Buffer retard[] = {Buffer(50000, 0.0), Buffer(50000, 0.0), Buffer(50000, 0.0)};
+  Buffer retard[] = {Buffer(70000, 0.0), Buffer(70000, 0.0), Buffer(70000, 0.0)};
   Buffer auxBuffer, canonicalBuffer;
 
   y[0] = -1.0;
@@ -55,7 +56,8 @@ void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
 
 
   // START WITH DECOUPLED NETWORK
-  double pars[3] = {75, -26.77777777777, 0.0};
+//  double pars[3] = {0, -26.77777777777, 0.0};
+  double pars[3] = {10, -26, 0.0};
   double poincareThresHold = -30.0;
   rk(nvar, y, 0.0, 4000, 4000,
         pars, 1.0e-8, 0, poincareThresHold, retard);
@@ -108,10 +110,10 @@ void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
   retard[1] = auxBuffer;
   retard[0] = canonicalBuffer;
 
-
+  pars[0] = r*P;
   pars[2] = 0.004;
-  rk(nvar, x, 0.0, 5000, 0.05, pars,
-        1.0e-8, 2, poincareThresHold, retard, addressof(result));
+  rk(nvar, x, 0.0, 10000, 10000, pars,
+        1.0e-6, 2, poincareThresHold, retard, addressof(result));
 
   return;
 }
@@ -122,14 +124,11 @@ int main(int argc, char** argv) {
     tasks.reserve(M*M);
     
     // Setup tasks
-    
-    for(int i = 0; i<M; i++) {
-        for(int j = 0; j<M; j++) {
-            tasks.emplace_back(Task(static_cast<double>(i)/M,
-                                    static_cast<double>(j)/M));
-        }
-    }
-    
+    for(int r = 0.1; r <= 1; r += 0.1)
+        for(int i = 0; i<M; i++)
+            for(int j = 0; j<M; j++)
+                tasks.emplace_back(Task(static_cast<double>(i)/M,
+                                        static_cast<double>(j)/M, r));
     
     // Initial position for the work
     auto pos = tasks.begin();
@@ -151,7 +150,7 @@ int main(int argc, char** argv) {
                 }
                 
                 // Do the work
-                worker(T->phi12, T->phi13, T->result);
+                worker(T->phi12, T->phi13, T->retard, T->result);
             }
             
         });
@@ -162,7 +161,8 @@ int main(int argc, char** argv) {
     
     // OK... print it on screen!
     for(auto& T : tasks) {
-        cout << T.phi12 << "\t"
+        cout << T.retard << "\t"
+             << T.phi12 << "\t"
              << T.phi13;
         for(auto& pto : T.result)
             cout << "\t" << pto.first << "\t" << pto.second;
