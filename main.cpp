@@ -3,9 +3,8 @@
 #include <cmath>
 #include <thread>
 #include <utility>
-#include <queue>
 #include <deque>
-#include <atomic>
+#include <mutex>
 #include "rk.hpp"
 
 
