@@ -20,10 +20,11 @@ using namespace std;
 
 class Task {
 public:
-    Task(double phi12, double phi13, double retard) : retard{retard}, phi12{phi12}, phi13{phi13}, result() {}
+    Task(double phi12, double phi13, double retard) : phi12{phi12}, phi13{phi13}, retard{retard}, result() {}
     Task(Task&& op) {
         phi12 = op.phi12;
         phi13 = op.phi13;
+        retard = op.retard;
         result = std::move(op.result);
     }
     
