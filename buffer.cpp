@@ -87,6 +87,8 @@ double Buffer::operator()(double t) {
   double th = (t-T[a])/(T[b]-T[a]);
   return V[a] + th*(V[b]-V[a]);
 }
+
+
 void Buffer::push_back(double t, double v) {
   if (status < n) {
     T[status] = t;

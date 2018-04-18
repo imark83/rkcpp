@@ -2,7 +2,7 @@ CC = g++
 TARGETS = main.cpp fun.cpp rk.cpp buffer.cpp
 OBJECTS = main.o fun.o rk.o buffer.o
 LIBS =
-CFLAGS = -O2 -g -Wall
+CFLAGS = -O2 -g -Wall -std=c++11
 
 
 %.o: %.cpp
