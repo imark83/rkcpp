@@ -26,7 +26,7 @@ public:
         retard = op.retard;
         result = std::move(op.result);
     }
-    
+
     double phi12;
     double phi13;
     double retard;
@@ -122,25 +122,25 @@ void worker(double phi12, double phi13, double r, deque<pair<int, double>>& resu
 int main(int argc, char** argv) {
     vector<Task> tasks;
     tasks.reserve(M*M);
-    
+
     // Setup tasks
-    for(int r = 0.1; r <= 1; r += 0.1)
+    for(double r = 0.1; r <= 1; r += 0.1)
         for(int i = 0; i<M; i++)
             for(int j = 0; j<M; j++)
                 tasks.emplace_back(Task(static_cast<double>(i)/M,
                                         static_cast<double>(j)/M, r));
-    
+
     // Initial position for the work
     auto pos = tasks.begin();
     auto end = tasks.end();
     mutex pos_mutex;
-    
+
     // Setup workers
     vector<thread> workers(thread::hardware_concurrency());
     for(auto& th : workers)
         th = thread([&pos, end, &pos_mutex]{
             Task* T;
-            
+
             while(true) {
                 { // Thread safe part
                     lock_guard<mutex> lock(pos_mutex);
@@ -148,17 +148,17 @@ int main(int argc, char** argv) {
                     T = addressof(*pos++);
                     //std::cout << std::this_thread::get_id() << " " << T->phi12*M << " " << T->phi13*M << endl;
                 }
-                
+
                 // Do the work
                 worker(T->phi12, T->phi13, T->retard, T->result);
             }
-            
+
         });
-    
+
     // Wait 'til everything ends
     for(auto& th : workers)
         th.join();
-    
+
     // OK... print it on screen!
     for(auto& T : tasks) {
         cout << T.retard << "\t"
@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
         cout << endl;
     }
 
-    
-    
+
+
     return 0;
 }
