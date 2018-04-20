@@ -67,7 +67,7 @@ void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
 
 
   // START WITH DECOUPLED NETWORK
-  double pars[2] = {-26.0, 0.0};
+  double pars[2] = {-24.0, 0.0};
   double poincareThresHold = -30.0;
   rk(nvar, y, 0.0, 4000, 4000,
         pars, 1.0e-8, 0, poincareThresHold);
