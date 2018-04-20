@@ -11,7 +11,7 @@
 int nsteps = 0;
 int nrejected = 0;
 
-constexpr int M = 10; // Number of points per dimension
+constexpr int M = 30; // Number of points per dimension
 
 
 using namespace std;
@@ -32,6 +32,8 @@ public:
 };
 
 void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
+
+  double r = 0.5;
 
   int nvar = 24;
   double y[nvar];
@@ -78,30 +80,75 @@ void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
   double x[nvar];     // initial conditions for network
   double z[nvar];     // variables to rock & roll the neuron
 
+
+  // SET NEURON (0,0)
   for(int i=0; i<3; ++i) {
-    x[9+i] = x[i] = z[i] = y[i];
+    x[i] = z[i] = y[i];
   }
-  x[21] = x[18] = z[18] = y[18];
+  x[18] = z[18] = y[18];
+
+
+  // SET NEURON (1,0)
+  rk(nvar, z, 0.0, (P*(r)), (P*(r)),
+      pars, 1.0e-8, 0, poincareThresHold);
+  for(int i=0; i<3; ++i) {
+    x[9+i] = z[i];
+  }
+  z[21] = z[18];
+
+
+
+  // SET NEURON (0,1)
+  for(int i=0; i<3; ++i){
+    z[i] = y[i];
+  }
+  z[18] = y[18];
   rk(nvar, z, 0.0, (P*(1.0-phi12)), (P*(1.0-phi12)),
       pars, 1.0e-8, 0, poincareThresHold);
   for(int i=0; i<3; ++i)
-    x[12+i] = x[3+i] = z[i];
-  x[22] = x[19] = z[18];
+    x[3+i] = z[i];
+  x[19] = z[18];
 
 
-  // GRIND IT... AGAIN!
+  // SET NEURON (1,1)
+  for(int i=0; i<3; ++i){
+    z[i] = y[i];
+  }
+  z[18] = y[18];
+  rk(nvar, z, 0.0, (P*(1.0-phi12+r)), (P*(1.0-phi12+r)),
+      pars, 1.0e-8, 0, poincareThresHold);
+  for(int i=0; i<3; ++i)
+    x[12+i] = z[i];
+  x[22] = z[18];
+
+
+
+  // SET NEURON (0,2)
   for(int i=0; i<3; ++i) {
     z[i] = y[i];
   }
+  z[18] = y[18];
   rk(nvar, z, 0.0, (P*(1.0-phi13)), (P*(1.0-phi13)),
       pars, 1.0e-8, 0, poincareThresHold);
-
   for(int i=0; i<3; ++i)
-    x[15+i] = x[6+i] = z[i];
-  x[23] = x[20] = z[18];
+    x[6+i] = z[i];
+  x[20] = z[18];
 
+  // SET NEURON (1,2)
+  for(int i=0; i<3; ++i) {
+    z[i] = y[i];
+  }
+  z[18] = y[18];
+  rk(nvar, z, 0.0, (P*(1.0-phi13+r)), (P*(1.0-phi13+r)),
+      pars, 1.0e-8, 0, poincareThresHold);
+  for(int i=0; i<3; ++i)
+    x[15+i] = z[i];
+  x[23] = z[18];
+
+
+  // COUPLE NEURONS AGAIN
   pars[1] = 0.002;
-  rk(nvar, x, 0.0, 4000, 4000, pars,
+  rk(nvar, x, 0.0, 10000, 10000, pars,
         1.0e-6, 2, poincareThresHold, addressof(result));
 
   return;
