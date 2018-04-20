@@ -13,23 +13,31 @@ constexpr int M = 30; // Number of points per dimension
 
 using namespace std;
 
-enum header {TASK_DONE, GIVE_ME, GIVE_YOU, NO_MORE};
+enum communication_type {TASK_DONE, GIVE_ME, GIVE_YOU, NO_MORE};
 
 class Task {
 public:
-    Task(double phi12, double phi13) : phi12{phi12}, phi13{phi13}, result() {}
+    Task(double phi21, double phi31) : phi21{phi21}, phi31{phi31}, result() {}
     Task(Task &&op) {
-        phi12 = op.phi12;
-        phi13 = op.phi13;
+        phi21 = op.phi21;
+        phi31 = op.phi31;
         result = std::move(op.result);
     }
 
-    double phi12;
-    double phi13;
+    double phi21;
+    double phi31;
     deque<pair<int, double>> result;
 };
 
-void work(double phi12, double phi13, deque<pair<int, double>>& result) {
+typedef struct {
+  int type;
+  int index;
+  double phi21;
+  double phi31;
+  size_t chunkSize;
+} header_t;
+
+void work(double phi21, double phi31, deque<pair<int, double>>& result) {
 
   double r = 0.5;
 
@@ -101,7 +109,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
     z[i] = y[i];
   }
   z[18] = y[18];
-  rk(nvar, z, 0.0, (P*(1.0-phi12)), (P*(1.0-phi12)),
+  rk(nvar, z, 0.0, (P*(1.0-phi21)), (P*(1.0-phi21)),
       pars, 1.0e-8, 0, poincareThresHold);
   for(int i=0; i<3; ++i)
     x[3+i] = z[i];
@@ -113,7 +121,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
     z[i] = y[i];
   }
   z[18] = y[18];
-  rk(nvar, z, 0.0, (P*(1.0-phi12+r)), (P*(1.0-phi12+r)),
+  rk(nvar, z, 0.0, (P*(1.0-phi21+r)), (P*(1.0-phi21+r)),
       pars, 1.0e-8, 0, poincareThresHold);
   for(int i=0; i<3; ++i)
     x[12+i] = z[i];
@@ -126,7 +134,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
     z[i] = y[i];
   }
   z[18] = y[18];
-  rk(nvar, z, 0.0, (P*(1.0-phi13)), (P*(1.0-phi13)),
+  rk(nvar, z, 0.0, (P*(1.0-phi31)), (P*(1.0-phi31)),
       pars, 1.0e-8, 0, poincareThresHold);
   for(int i=0; i<3; ++i)
     x[6+i] = z[i];
@@ -137,7 +145,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
     z[i] = y[i];
   }
   z[18] = y[18];
-  rk(nvar, z, 0.0, (P*(1.0-phi13+r)), (P*(1.0-phi13+r)),
+  rk(nvar, z, 0.0, (P*(1.0-phi31+r)), (P*(1.0-phi31+r)),
       pars, 1.0e-8, 0, poincareThresHold);
   for(int i=0; i<3; ++i)
     x[15+i] = z[i];
@@ -157,7 +165,7 @@ int main(int argc, char** argv) {
 
   // MPI STUFF
   int proc_id, world_size;
-  // MPI_Status status;
+  MPI_Status status;
   int incomingMessage;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &proc_id);
@@ -172,7 +180,8 @@ int main(int argc, char** argv) {
 
 
   vector<Task> tasks;
-  int *buffer = new int[1000];
+  char *buffer;
+
 
 
   if (proc_id == 0) {
@@ -196,12 +205,16 @@ int main(int argc, char** argv) {
         MPI_Iprobe(worker, 0, MPI_COMM_WORLD, &incomingMessage,
                 &status);
         if(incomingMessage) {
-          MPI_Get_count(&status, MPI_INT, &msgLen);
-          MPI_Recv(buffer, msgLen, MPI_INT, worker,
+          MPI_Get_count(&status, MPI_BYTE, &msgLen);
+          buffer = new char[msgLen];
+          MPI_Recv(buffer, msgLen, MPI_CHAR, worker,
                 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+          header_t *header = buffer;
+          switch (header->type) {
+            case TASK_DONE:
+              
+          }
         }
-
       }
     }
 
@@ -224,10 +237,10 @@ int main(int argc, char** argv) {
               lock_guard<mutex> lock(pos_mutex);
               if(pos == end) return;
               T = addressof(*pos++);
-              //std::cout << std::this_thread::get_id() << " " << T->phi12*M << " " << T->phi13*M << endl;
+              //std::cout << std::this_thread::get_id() << " " << T->phi21*M << " " << T->phi31*M << endl;
           }
           // Do the work
-          worker(T->phi12, T->phi13, T->result);
+          worker(T->phi21, T->phi31, T->result);
         }
 
       });
@@ -238,7 +251,7 @@ int main(int argc, char** argv) {
 
   // OK... print it on screen!
   for(auto &T : tasks) {
-    std::cout << T.phi12 << "\t" << T.phi13;
+    std::cout << T.phi21 << "\t" << T.phi31;
     for(auto& pto : T.result)
       std::cout << "\t" << pto.first << "\t" << pto.second;
     std::cout << std::endl;
