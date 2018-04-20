@@ -1,21 +1,19 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <thread>
-#include <utility>
+#include <mpi.h>
+// #include <utility>
 #include <deque>
-#include <mutex>
+#include <vector>
 #include "rk.hpp"
 
-
-int nsteps = 0;
-int nrejected = 0;
 
 constexpr int M = 30; // Number of points per dimension
 
 
 using namespace std;
 
+enum header {TASK_DONE, GIVE_ME, GIVE_YOU, NO_MORE};
 
 class Task {
 public:
@@ -31,7 +29,7 @@ public:
     deque<pair<int, double>> result;
 };
 
-void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
+void work(double phi12, double phi13, deque<pair<int, double>>& result) {
 
   double r = 0.5;
 
@@ -156,19 +154,63 @@ void worker(double phi12, double phi13, deque<pair<int, double>>& result) {
 
 
 int main(int argc, char** argv) {
-  vector<Task> tasks;
-  tasks.reserve(M*M);
 
-  // Setup tasks
-  for(int i = 0; i<M; i++)
-    for(int j = 0; j<M; j++)
-      tasks.emplace_back(Task(static_cast<double>(i)/M,
+  // MPI STUFF
+  int proc_id, world_size;
+  // MPI_Status status;
+  int incomingMessage;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &proc_id);
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  if(world_size < 2) {
+    cerr << "need 2 or more slots" << endl;
+    exit(1);
+  }
+  char processor_name[100];
+  int name_len;
+  MPI_Get_processor_name(processor_name, &name_len);
+
+
+  vector<Task> tasks;
+  int *buffer = new int[1000];
+
+
+  if (proc_id == 0) {
+    int activeWorkers = world_size-1;
+    int pendingTask = taskSize;
+    int completedTask = 0;
+
+
+    tasks.reserve(M*M);
+    // Setup tasks
+    for(int i = 0; i<M; i++)
+      for(int j = 0; j<M; j++)
+        tasks.emplace_back(Task(static_cast<double>(i)/M,
               static_cast<double>(j)/M));
+
+
+    // MAIN COMMUNICATION LOOP
+    while(!completedTask || activeWorkers) {
+      // QUERY WORKERS ONE BY ONE
+      for(int worker=1; worker < world_size; ++worker) {
+        MPI_Iprobe(worker, 0, MPI_COMM_WORLD, &incomingMessage,
+                &status);
+        if(incomingMessage) {
+          MPI_Get_count(&status, MPI_INT, &msgLen);
+          MPI_Recv(buffer, msgLen, MPI_INT, worker,
+                0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        }
+
+      }
+    }
+
 
   // Initial position for the work
   auto pos = tasks.begin();
   auto end = tasks.end();
-  mutex pos_mutex;
+
+
 
   // Setup workers
   vector<thread> workers(thread::hardware_concurrency());
@@ -201,6 +243,11 @@ int main(int argc, char** argv) {
       std::cout << "\t" << pto.first << "\t" << pto.second;
     std::cout << std::endl;
   }
+
+
+
+
+  MPI_Finalize();
 
   return 0;
 }
