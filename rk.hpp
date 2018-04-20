@@ -20,9 +20,7 @@ void computeStages (int nvar, 		// number of variables
 			double x[],								// integrated variable
 			double t,										// integration variable
 	 		double h, 									// step size
-			double *pars,  							// parameters
-      Buffer *retard);
-			// cardioFun f);
+			double *pars); 							// parameters
 
 //
 double rk(int nvar, 					// number of variables of dependent variable
@@ -34,6 +32,6 @@ double rk(int nvar, 					// number of variables of dependent variable
 	double tol,									// parameters
 	int event,									// variable to compute poincare sections. -1 none
 	double eventVal,						// poincare section value
-          Buffer *retard, std::deque<std::pair<int, double>>* results = nullptr);
+  std::deque<std::pair<int, double>>* results = nullptr);
 
 #endif
