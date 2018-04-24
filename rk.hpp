@@ -32,6 +32,6 @@ double rk(int nvar, 					// number of variables of dependent variable
 	double tol,									// parameters
 	int event,									// variable to compute poincare sections. -1 none
 	double eventVal,						// poincare section value
-  std::deque<std::pair<int, double>>* results = nullptr);
+  std::deque<std::pair<int, double> >* results = NULL);
 
 #endif

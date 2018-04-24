@@ -8,8 +8,8 @@
 
 using namespace std;
 
-extern int nsteps;
-extern int nrejected;
+// extern int nsteps;
+// extern int nrejected;
 
 
 
@@ -66,7 +66,7 @@ double estimateError(int nvar, double rkStage[], double h) {
 
 void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
                    double rkStage[], double eventVal,
-                   deque<pair<int, double>>* results) {
+                   deque<pair<int, double> >* results) {
 
 	double eventT;
 	double eventX[nvar];
@@ -167,7 +167,7 @@ double rk(int nvar, 					// number of variables of dependent variable
 	double tol,									// parameters
 	int event,									// variable to compute poincare sections. -1 none
 	double eventVal,   					// poincare section value
-  deque<pair<int, double>>* results) {
+  deque<pair<int, double> > *results) {
 	// cardioFun f);
 
 
@@ -198,7 +198,7 @@ double rk(int nvar, 					// number of variables of dependent variable
 
 	// MAIN LOOP
 	while(!endOfIntegration) {
-		++nsteps;
+		// ++nsteps;
 		computeStages(nvar, rkStage, x, t, step, pars);
 		double error = estimateError(nvar, rkStage, step);
 
@@ -209,7 +209,7 @@ double rk(int nvar, 					// number of variables of dependent variable
 
 		// CHECK IF WE REJECT STEP
 		if(error > tol || error > tol*normX) {
-			++nrejected;
+			// ++nrejected;
 			step = 0.2 * step;
 			continue;
 		}

@@ -1,14 +1,15 @@
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 #include <cmath>
 #include <mpi.h>
-// #include <utility>
+#include <utility>
 #include <deque>
 #include <vector>
 #include "rk.hpp"
 
 
-constexpr int M = 30; // Number of points per dimension
+const int M = 4; // Number of points per dimension
 
 
 using namespace std;
@@ -17,16 +18,13 @@ enum communication_type {TASK_DONE, GIVE_ME, GIVE_YOU, NO_MORE};
 
 class Task {
 public:
-    Task(double phi21, double phi31) : phi21{phi21}, phi31{phi31}, result() {}
-    Task(Task &&op) {
-        phi21 = op.phi21;
-        phi31 = op.phi31;
-        result = std::move(op.result);
-    }
+    Task(double phi21, double phi31) : phi21(phi21), phi31(phi31), result() {}
+    Task(const Task &op) :
+          phi21(op.phi21), phi31(op.phi31), result(op.result) {}
 
     double phi21;
     double phi31;
-    deque<pair<int, double>> result;
+    deque<pair<int, double> > result;
 };
 
 typedef struct {
@@ -34,10 +32,189 @@ typedef struct {
   int index;
   double phi21;
   double phi31;
-  size_t chunkSize;
+  int ropSize;
 } header_t;
 
-void work(double phi21, double phi31, deque<pair<int, double>>& result) {
+void work(double phi21, double phi31, deque<pair<int, double> > &result);
+
+int main(int argc, char** argv) {
+
+  // MPI STUFF
+  int proc_id, world_size, bufferLength;
+  MPI_Status status;
+  int incomingMessage;
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &proc_id);
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  if(world_size < 2) {
+    cerr << "need 2 or more slots" << endl;
+    MPI_Finalize();
+    exit(1);
+  }
+  char processor_name[100];
+  int name_len;
+  MPI_Get_processor_name(processor_name, &name_len);
+
+
+  vector<Task> tasks;
+  char *buffer;
+
+
+
+  // ROOT NODE ROUTINES
+  if (proc_id == 0) {
+    int taskSize = M*M;
+    int activeWorkers = world_size-1;
+    int pendingTask = taskSize;
+    int completedTask = 0;
+
+
+    tasks.resize(M*M, Task(-1.0, -1.0));
+    // Setup tasks
+    for(int i = 0; i<M; ++i)
+      for(int j = 0; j<M; ++j) {
+        Task toEnqueue((1.0*i)/M, (1.0*j)/M);
+        tasks[M*i+j] = toEnqueue;
+      }
+
+
+    // MAIN COMMUNICATION LOOP
+    while((completedTask != taskSize) || activeWorkers) {
+      // cerr << "condition = " << completedTask << endl;
+      // QUERY WORKERS ONE BY ONE
+      for(int worker=1; worker < world_size; ++worker) {
+        MPI_Iprobe(worker, 0, MPI_COMM_WORLD, &incomingMessage,
+                &status);
+        if(incomingMessage) {
+          MPI_Get_count(&status, MPI_BYTE, &bufferLength);
+          buffer = new char[bufferLength];
+          MPI_Recv(buffer, bufferLength, MPI_CHAR, worker,
+                0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          header_t *header = (header_t *) buffer;
+          switch (header->type) {
+            case TASK_DONE:
+              {
+              cerr << "proc " << worker << " returns work" << endl;
+              ++completedTask;
+              vector<pair<int, double> > rop(header->ropSize);
+              memcpy(&(rop[0]), buffer+sizeof(header_t),
+                  (header->ropSize)*sizeof(pair<int, double>));
+              Task toStore(header->phi21, header->phi31);
+              for(int i=0; i<rop.size(); ++i)
+                toStore.result.push_back(rop[i]);
+              tasks[header->index] = toStore;
+              delete [] buffer;
+              break;
+              }
+            case GIVE_ME:
+              {
+              cerr << "proc " << worker << " asks for work" << endl;
+              if(pendingTask) {
+                int index = taskSize - pendingTask;
+                header->type = GIVE_YOU;
+                header->index = index;
+                header->phi21 = tasks[index].phi21;
+                header->phi31 = tasks[index].phi31;
+                header->ropSize = 0;
+                --pendingTask;
+              } else {
+                header->type = NO_MORE;
+                header->index = -1;
+                header->phi21 = -1.0;
+                header->phi31 = -1.0;
+                header->ropSize = -1;
+                --activeWorkers;
+              }
+              MPI_Send(buffer, sizeof(header_t), MPI_CHAR, worker,
+                      0, MPI_COMM_WORLD);
+              break;
+              }
+          }
+        }
+      }
+    }
+  }
+  // WORKERS ROUTINES
+  else {
+    while(1) {
+      buffer = new char[sizeof(header_t)];
+      header_t *header = (header_t *) buffer;
+      header->type = GIVE_ME;
+      cerr << "\t\t\tI'm " << proc_id << " and want work" << endl;
+      MPI_Send(buffer, sizeof(header_t), MPI_CHAR, 0,
+              0, MPI_COMM_WORLD);
+      MPI_Recv(buffer, sizeof(header_t), MPI_CHAR, 0,
+              0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+      if(header->type == NO_MORE) {
+        cerr << "\t\t\tI'm " << proc_id << " and recive nothing :( " << buffer[1] << endl;
+        cerr << "\t\t\t\t\t\tworker " << processor_name << "-" << proc_id << " finished job" << endl;
+        break;
+      }
+      cerr << "\t\t\tI'm " << proc_id << " and recive task " << buffer[1] << endl;
+      int index = header->index;
+      double phi21 = header->phi21;
+      double phi31 = header->phi31;
+      // DO TASK
+      deque<pair<int, double> > result;
+      work(phi21, phi31, result);
+
+      vector<pair<int, double> > toSend(result.size());
+      for(int i = 0; i < result.size(); ++i)
+        toSend[i] = result[i];
+
+      // cerr << "result size = " << result.size() << endl;
+      // cerr << "\t\t\t" << proc_id << " gonna send \n\t\t\t";
+      // for(int i = 0; i < result.size(); ++i)
+      //   cerr << "  (" << toSend[i].first << ", " << toSend[i].second << ")";
+      // cerr << endl;
+
+      delete [] buffer;
+      buffer = new char[sizeof(header_t)
+              + toSend.size()*sizeof(pair<double, int>)];
+      header = (header_t *) buffer;
+
+      header->type = TASK_DONE;
+      header->index = index;
+      header->phi21 = phi21;
+      header->phi31 = phi31;
+      header->ropSize = toSend.size();
+      memcpy(buffer+sizeof(header_t), &(toSend[0]),
+              toSend.size()*sizeof(pair<int, double>));
+      int bufferLength =
+            toSend.size()*sizeof(pair<int, double>) + sizeof(header_t);
+      MPI_Send(buffer, bufferLength, MPI_CHAR, 0,
+              0, MPI_COMM_WORLD);
+    }
+  }
+
+
+  // ROOT NODE WRITES OUTPUT
+  if(proc_id == 0) {
+    cout << "tasks size = " << tasks.size() << endl;
+    cout << "reult[1] size = " << tasks[1].result.size() << endl;
+    // OK... print it on screen!
+    for(auto &T : tasks) {
+      cout << T.phi21 << "\t" << T.phi31;
+      for(auto& pto : T.result)
+      cout << "\t" << pto.first << "\t" << pto.second;
+      cout << endl;
+    }
+  }
+
+  MPI_Finalize();
+
+  return 0;
+}
+
+
+void work(double phi21, double phi31, deque<pair<int, double> > &result) {
+
+  // result.push_back(make_pair(1, phi21));
+  // result.push_back(make_pair(0, phi31));
+  // result.push_back(make_pair(2, 2.5));
+  //
+  // return;
 
   double r = 0.5;
 
@@ -81,7 +258,7 @@ void work(double phi21, double phi31, deque<pair<int, double>>& result) {
 
   double P = rk(nvar, y, 0.0, 1000, 1000,
         pars, 1.0e-8, 1, poincareThresHold);
-  std::cerr << "P = " << P << std::endl;
+  cerr << "P = " << P << endl;
 
   double x[nvar];     // initial conditions for network
   double z[nvar];     // variables to rock & roll the neuron
@@ -158,109 +335,4 @@ void work(double phi21, double phi31, deque<pair<int, double>>& result) {
         1.0e-6, 2, poincareThresHold, addressof(result));
 
   return;
-}
-
-
-int main(int argc, char** argv) {
-
-  // MPI STUFF
-  int proc_id, world_size;
-  MPI_Status status;
-  int incomingMessage;
-  MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &proc_id);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  if(world_size < 2) {
-    cerr << "need 2 or more slots" << endl;
-    exit(1);
-  }
-  char processor_name[100];
-  int name_len;
-  MPI_Get_processor_name(processor_name, &name_len);
-
-
-  vector<Task> tasks;
-  char *buffer;
-
-
-
-  if (proc_id == 0) {
-    int activeWorkers = world_size-1;
-    int pendingTask = taskSize;
-    int completedTask = 0;
-
-
-    tasks.reserve(M*M);
-    // Setup tasks
-    for(int i = 0; i<M; i++)
-      for(int j = 0; j<M; j++)
-        tasks.emplace_back(Task(static_cast<double>(i)/M,
-              static_cast<double>(j)/M));
-
-
-    // MAIN COMMUNICATION LOOP
-    while(!completedTask || activeWorkers) {
-      // QUERY WORKERS ONE BY ONE
-      for(int worker=1; worker < world_size; ++worker) {
-        MPI_Iprobe(worker, 0, MPI_COMM_WORLD, &incomingMessage,
-                &status);
-        if(incomingMessage) {
-          MPI_Get_count(&status, MPI_BYTE, &msgLen);
-          buffer = new char[msgLen];
-          MPI_Recv(buffer, msgLen, MPI_CHAR, worker,
-                0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-          header_t *header = buffer;
-          switch (header->type) {
-            case TASK_DONE:
-              
-          }
-        }
-      }
-    }
-
-
-  // Initial position for the work
-  auto pos = tasks.begin();
-  auto end = tasks.end();
-
-
-
-  // Setup workers
-  vector<thread> workers(thread::hardware_concurrency());
-  // vector<thread> workers(1);
-  for(auto& th : workers)
-    th = thread([&pos, end, &pos_mutex]{
-        Task* T;
-
-        while(true) {
-          { // Thread safe part
-              lock_guard<mutex> lock(pos_mutex);
-              if(pos == end) return;
-              T = addressof(*pos++);
-              //std::cout << std::this_thread::get_id() << " " << T->phi21*M << " " << T->phi31*M << endl;
-          }
-          // Do the work
-          worker(T->phi21, T->phi31, T->result);
-        }
-
-      });
-
-  // Wait 'til everything ends
-  for(auto& th : workers)
-    th.join();
-
-  // OK... print it on screen!
-  for(auto &T : tasks) {
-    std::cout << T.phi21 << "\t" << T.phi31;
-    for(auto& pto : T.result)
-      std::cout << "\t" << pto.first << "\t" << pto.second;
-    std::cout << std::endl;
-  }
-
-
-
-
-  MPI_Finalize();
-
-  return 0;
 }
