@@ -259,7 +259,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
   retard[0].resetTime();
   retard[1].resetTime();
   retard[2].resetTime();
-   std::cout << "P = " << P << std::endl;
+   std::cerr << "P = " << P << std::endl;
   canonicalBuffer = retard[0];
 
 
