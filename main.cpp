@@ -11,8 +11,9 @@
 
 
 
-const int M = 4; // Number of points per dimension
-double vthKS = -26.0;
+const int M = 10; // Number of points per dimension
+const double vthKS = -26.0;
+const int bufferSize = 70000;
 
 using namespace std;
 
@@ -226,7 +227,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
   int nvar = 12;
   double y[nvar];
   // Mierdas de Buffers
-  Buffer retard[] = {Buffer(70000, 0.0), Buffer(70000, 0.0), Buffer(70000, 0.0)};
+  Buffer retard[] = {Buffer(bufferSize, 0.0), Buffer(bufferSize, 0.0), Buffer(bufferSize, 0.0)};
   Buffer auxBuffer, canonicalBuffer;
 
   y[0] = -1.0;
@@ -245,7 +246,7 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
 
   // START WITH DECOUPLED NETWORK
   //  double pars[3] = {0, -26.77777777777, 0.0};
-  double pars[3] = {10, vthKS, 0.0};
+  double pars[3] = {1, vthKS, 0.0};
   double poincareThresHold = -30.0;
   rk(nvar, y, 0.0, 4000, 4000,
         pars, 1.0e-8, 0, poincareThresHold, retard);
@@ -258,14 +259,14 @@ void work(double phi12, double phi13, deque<pair<int, double>>& result) {
   retard[0].resetTime();
   retard[1].resetTime();
   retard[2].resetTime();
-  //  std::cout << "P = " << P << std::endl;
+   std::cout << "P = " << P << std::endl;
   canonicalBuffer = retard[0];
 
 
   double x[nvar];     // initial conditions for network
   double z[nvar];     // variables to rock & roll the neuron
 
-  for(int i=0; i<3; ++i) {
+  for(int i=0; i<12; ++i) {
     x[i] = z[i] = y[i];
   }
   x[9] = z[9] = y[9];
