@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cmath>
+#include <cstring>
 #include <mpi.h>
 #include <utility>
 #include <deque>
