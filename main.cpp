@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
       buffer = new char[sizeof(header_t)];
       header_t *header = (header_t *) buffer;
       header->type = GIVE_ME;
-      cerr << "\t\t\tI'm " << << processor_name << "-" << proc_id << " and want work" << endl;
+      cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and want work" << endl;
       MPI_Send(buffer, sizeof(header_t), MPI_CHAR, 0,
               0, MPI_COMM_WORLD);
       MPI_Recv(buffer, sizeof(header_t), MPI_CHAR, 0,

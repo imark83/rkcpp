@@ -70,7 +70,7 @@ void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
 
 	double eventT;
 	double eventX[nvar];
-  for(int k=0; k<3; ++k) {
+  for(int k=0; k<6; ++k) {
     if ((x[3*k]-eventVal)*(xNext[3*k]-eventVal) < 0.0
             && (xNext[3*k]-eventVal) > 0.0) {
       double x_L, x_M; //, x_R;
