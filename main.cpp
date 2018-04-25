@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
       buffer = new char[sizeof(header_t)];
       header_t *header = (header_t *) buffer;
       header->type = GIVE_ME;
-      cerr << "\t\t\tI'm " << proc_id << " and want work" << endl;
+      cerr << "\t\t\tI'm " << << processor_name << "-" << proc_id << " and want work" << endl;
       MPI_Send(buffer, sizeof(header_t), MPI_CHAR, 0,
               0, MPI_COMM_WORLD);
       MPI_Recv(buffer, sizeof(header_t), MPI_CHAR, 0,
@@ -195,8 +195,7 @@ int main(int argc, char** argv) {
 
   // ROOT NODE WRITES OUTPUT
   if(proc_id == 0) {
-    cout << "tasks size = " << tasks.size() << endl;
-    cout << "reult[1] size = " << tasks[1].result.size() << endl;
+    cerr << "tasks size = " << tasks.size() << endl;
     // OK... print it on screen!
     for(auto &T : tasks) {
       cout << T.phi21 << "\t" << T.phi31;
