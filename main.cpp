@@ -67,15 +67,22 @@ int main(int argc, char** argv) {
   MPI_Get_processor_name(processor_name, &name_len);
 
 
+  int taskSize = M*M;
   vector<Task> tasks;
   char *buffer;
 
-
+  if(proc_id > taskSize) {
+    cerr << "\t\t\t NO TASK FOR proc "
+          << processor_name << "-" << proc_id << endl;
+    MPI_Finalize();
+    return 0;
+  }
 
   // ROOT NODE ROUTINES
   if (proc_id == 0) {
     int taskSize = M*M;
     int activeWorkers = world_size-1;
+      if(activeWorkers > taskSize) activeWorkers = taskSize;
     int pendingTask = taskSize;
     int completedTask = 0;
 
