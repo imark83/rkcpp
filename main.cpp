@@ -127,6 +127,7 @@ int main(int argc, char** argv) {
               }
               MPI_Send(buffer, sizeof(header_t), MPI_CHAR, worker,
                       0, MPI_COMM_WORLD);
+              delete [] buffer;
               break;
               }
           }
@@ -149,6 +150,7 @@ int main(int argc, char** argv) {
       if(header->type == NO_MORE) {
         cerr << "\t\t\tI'm " << proc_id << " and recive nothing :( " << buffer[1] << endl;
         cerr << "\t\t\t\t\t\tworker " << processor_name << "-" << proc_id << " finished job" << endl;
+        delete [] buffer;
         break;
       }
       cerr << "\t\t\tI'm " << proc_id << " and recive task " << buffer[1] << endl;
@@ -185,6 +187,7 @@ int main(int argc, char** argv) {
             toSend.size()*sizeof(pair<int, double>) + sizeof(header_t);
       MPI_Send(buffer, bufferLength, MPI_CHAR, 0,
               0, MPI_COMM_WORLD);
+      delete [] buffer;
     }
   }
 
