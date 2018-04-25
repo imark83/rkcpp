@@ -149,12 +149,12 @@ int main(int argc, char** argv) {
               0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
       if(header->type == NO_MORE) {
-        cerr << "\t\t\tI'm " << proc_id << " and recive nothing :( " << buffer[1] << endl;
+        cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive nothing :( " << buffer[1] << endl;
         cerr << "\t\t\t\t\t\tworker " << processor_name << "-" << proc_id << " finished job" << endl;
         delete [] buffer;
         break;
       }
-      cerr << "\t\t\tI'm " << proc_id << " and recive task " << buffer[1] << endl;
+      cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive task " << buffer[1] << endl;
       int index = header->index;
       double phi21 = header->phi21;
       double phi31 = header->phi31;
@@ -253,7 +253,7 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
 
 
   // START WITH DECOUPLED NETWORK
-  double pars[2] = {-26.0, 0.0};
+  double pars[2] = {-25.0, 0.0};
   double poincareThresHold = -30.0;
   rk(nvar, y, 0.0, 4000, 4000,
         pars, 1.0e-8, 0, poincareThresHold);
