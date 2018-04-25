@@ -8,8 +8,8 @@
 
 using namespace std;
 
-extern int nsteps;
-extern int nrejected;
+// extern int nsteps;
+// extern int nrejected;
 
 
 
@@ -102,7 +102,7 @@ void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
 
       eventT = t + th_M*step;
       results->push_back(make_pair(k, eventT));
-        
+
       // std::cout << k << "  " << eventT << "  ";
 //      std::cout << eventT;
 //      for(int j=0; j<3; ++j)
@@ -202,7 +202,7 @@ double rk(int nvar, 					// number of variables of dependent variable
 
 	// MAIN LOOP
 	while(!endOfIntegration) {
-		++nsteps;
+		// ++nsteps;
 		computeStages(nvar, rkStage, x, t, step, pars, retard);
 		double error = estimateError(nvar, rkStage, step);
 
@@ -213,7 +213,7 @@ double rk(int nvar, 					// number of variables of dependent variable
 
 		// CHECK IF WE REJECT STEP
 		if(error > tol || error > tol*normX) {
-			++nrejected;
+			// ++nrejected;
 			step = 0.2 * step;
 			continue;
 		}
