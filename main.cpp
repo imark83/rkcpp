@@ -91,7 +91,8 @@ int main(int argc, char** argv) {
     // Setup tasks
     for(int i = 0; i<M; ++i)
       for(int j = 0; j<M; ++j) {
-        Task toEnqueue((1.0*i)/M, (1.0*j)/M);
+        // Task toEnqueue((1.0*i)/M, (1.0*j)/M);
+        Task toEnqueue(0.5/M + (1.0*i)/M+0.001, 0.5/M + (1.0*j)/M);
         tasks[M*i+j] = toEnqueue;
       }
 
