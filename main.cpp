@@ -2,22 +2,22 @@
 #include <fstream>
 #include <mpi.h>
 #include <stdint.h>
+#include <cstdlib>
+#include <vector>
 // #include <cmath>
-// #include <cstdlib>
 // #include <cstring>
 
 
 
 // #include <deque>
-// #include <vector>
-#include "rk.hpp"
+// #include "rk.hpp"
 
 
 
 const int M = 10; // Number of points per dimension
 const int max_chunkSize = 5; // Max number of tasks sent to a worker
-const double[2] g_vthKS = {-28.0, -22};
-const double[2] g_Iext = {35.0, 36.0};
+const double g_vthKS[] = {-28.0, -22};
+const double g_Iext[] = {35.0, 36.0};
 
 using namespace std;
 
@@ -41,6 +41,8 @@ public:
   int i;
   int j;
   result_t result;
+
+  Task () {}
 
   Task(int _index, int _i, int _j)
       : index(_index), i(_i), j(_j) {
@@ -86,7 +88,7 @@ int main(int argc, char** argv) {
   char *buffer;
   header_t *header;
   result_t *rop;
-  size_t bufferLen = 0;
+  int bufferLen = 0;
 
   if(proc_id > taskSize) {
     cerr << "\t\t\t NO TASK FOR proc "
@@ -132,8 +134,8 @@ int main(int argc, char** argv) {
               if(pendingTask) {
                 delete [] buffer;
                 int chunkSize = min(max_chunkSize, pendingTask);
-                bufferSize = sizeof(header_t) + 2*chunkSize*sizeof(double)
-                buffer = new char[bufferSize];
+                bufferLen = sizeof(header_t) + 2*chunkSize*sizeof(double);
+                buffer = new char[bufferLen];
                 header = (header_t *) buffer;
                 double *data0 = (double *) (buffer + sizeof(header_t));
                 double *data1 =
@@ -143,19 +145,19 @@ int main(int argc, char** argv) {
                 header->index = taskSize - pendingTask;
                 header->chunkSize = chunkSize;
                 for(int i=0; i<chunkSize; ++i) {
-                  data0[i] = tasks[index+i].vthKS;
-                  data1[i] = tasks[index+i].Iext;
+                  data0[i] = tasks[header->index+i].vthKS;
+                  data1[i] = tasks[header->index+i].Iext;
                 }
                 pendingTask -= chunkSize;
               } else {
-                bufferSize = sizeof(header_t);
+                bufferLen = sizeof(header_t);
                 header->type = NO_MORE;
                 header->index = -1;
                 header->chunkSize = 0;
                 --activeWorkers;
               }
 
-              MPI_Send(buffer, bufferSize, MPI_CHAR, worker,
+              MPI_Send(buffer, bufferLen, MPI_CHAR, worker,
                     0, MPI_COMM_WORLD);
               delete [] buffer;
               break;
@@ -185,7 +187,7 @@ int main(int argc, char** argv) {
       MPI_Send(buffer, sizeof(header_t), MPI_CHAR, 0,
               0, MPI_COMM_WORLD);
 
-      MPI_Probe(worker, 0, MPI_COMM_WORLD, &status);
+      MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
       MPI_Get_count(&status, MPI_BYTE, &bufferLen);
       delete [] buffer;
       buffer = new char[bufferLen];
@@ -250,7 +252,7 @@ int main(int argc, char** argv) {
 //   int nvar = 12;
 //   double y[nvar];
 //   // Mierdas de Buffers
-//   Buffer retard[] = {Buffer(bufferSize, 0.0), Buffer(bufferSize, 0.0), Buffer(bufferSize, 0.0)};
+//   Buffer retard[] = {Buffer(bufferLen, 0.0), Buffer(bufferLen, 0.0), Buffer(bufferLen, 0.0)};
 //   Buffer auxBuffer, canonicalBuffer;
 //
 //   y[0] = -1.0;
