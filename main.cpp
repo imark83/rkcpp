@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <mpi.h>
-#include <stdint.h>
 #include <cstdlib>
 #include <vector>
+
+
+#include "work.hpp"
 // #include <cmath>
 // #include <cstring>
 
@@ -24,44 +26,6 @@ using namespace std;
 
 enum communication_type {TASK_DONE, GIVE_ME, GIVE_YOU, NO_MORE};
 
-typedef struct {
-  uint64_t sn;
-  double period;
-  double dutyCycle;
-  // result_t () : sn(0), period(0.0), dutyCycle(0.0) {}
-  // result_t(uint64_t _sn, double _period, double _dutyCycle)
-  //       : sn(_sn), period(_period), dutyCycle(_dutyCycle) {}
-} result_t;
-
-class Task {
-public:
-  double vthKS;
-  double Iext;
-  int index;
-  int i;
-  int j;
-  result_t result;
-
-  Task () {}
-
-  Task(int _index, int _i, int _j)
-      : index(_index), i(_i), j(_j) {
-    vthKS = g_vthKS[0] + _i*(g_vthKS[1]-g_vthKS[0])/(M-1.0);
-    Iext = g_Iext[0] + _j*(g_Iext[1]-g_Iext[0])/(M-1.0);
-  }
-};
-
-
-typedef struct {
-  int type;
-  int index;
-  int chunkSize;
-} header_t;
-
-
-
-
-void work(double vthKS, double Iext, result_t &result);
 
 
 
@@ -110,7 +74,7 @@ int main(int argc, char** argv) {
     // Setup allTasks
     for(int i = 0; i<M; ++i)
       for(int j = 0; j<M; ++j)
-        allTasks[M*i+j] = Task(M*i+j, i, j);
+        allTasks[M*i+j] = Task(M*i+j, i, j, g_vthKS, g_Iext, M);
 
 
     // MAIN COMMUNICATION LOOP
@@ -205,9 +169,7 @@ int main(int argc, char** argv) {
 
       // DO TASK
       for(int i=0; i<header->chunkSize; ++i) {
-        task[i].result.sn=55;
-        task[i].result.period = 999.0;
-        task[i].result.dutyCycle = 0.77;
+        work(task[i]);
       }
 
       header->type = TASK_DONE;
@@ -223,7 +185,7 @@ int main(int argc, char** argv) {
     cerr << "allTasks size = " << allTasks.size() << endl;
     // OK... print it on screen!
     for(int i=0; i<allTasks.size(); ++i) {
-      cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.dutyCycle << endl;
+      cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.sn << ", " << allTasks[i].result.period << ", " << allTasks[i].result.dutyCycle << endl;
       // for(auto& pto : T.result)
       // cout << "\t" << pto.first << "\t" << pto.second;
     }
