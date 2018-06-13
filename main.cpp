@@ -130,9 +130,9 @@ int main(int argc, char** argv) {
             case GIVE_ME: {
               cerr << "proc " << worker << " asks for work" << endl;
               if(pendingTask) {
-                cerr << "I have " << pendingTask << " pending allTasks" << endl;
+                cerr << "I have " << pendingTask << " pending tasks" << endl;
                 int chunkSize = min(max_chunkSize, pendingTask);
-                cerr << "I send you " << chunkSize << " allTasks" << endl;
+                cerr << "I send you " << chunkSize << " tasks" << endl;
 
                 bufferLen = sizeof(header_t) + chunkSize*sizeof(Task);
                 buffer = new char[bufferLen];
@@ -165,7 +165,6 @@ int main(int argc, char** argv) {
                 allTasks[header->index+i].result = task[i].result;
 
               delete [] buffer;
-              cerr << "allTasks stored" << endl;
               break;
             }
           }
@@ -201,13 +200,7 @@ int main(int argc, char** argv) {
       }
 
       task = (Task *) (buffer + sizeof(header_t));
-      cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive task " << buffer[1] << endl;
-
-      for(int i=0; i<header->chunkSize; ++i) {
-        cout << "data0[" << i <<"] = " << task[i].vthKS << endl;
-        cout << "data1[" << i <<"] = " << task[i].Iext << endl;
-      }
-
+      cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive " << header->chunkSize << " indexed at " << header->index << endl;
 
 
       // DO TASK
