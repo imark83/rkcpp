@@ -67,7 +67,7 @@ double estimateError(int nvar, double rkStage[], double h) {
 
 
 
-int singlePoincare(int nvar, double t, double step, double x[],
+int spikePoincare(int nvar, double t, double step, double x[],
 				double xNext[], double rkStage[], double tol, double pars[],
 				double &eventT, double eventX[]) {
 
@@ -124,7 +124,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 			double denseStep,				// dense step for output
 			double *pars, 					// parameters
 			double tol,							// parameters
-			int event,							// variable to compute poincare sections. -1 none
+			int event,							// 0 -> none. 1-> period. 2->nspikes and DC
 			Task &task) {
 
 
@@ -138,7 +138,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 	// VARIABLES FOR SPIKE NUMBER COMPUTATION
 	double xNext[nvar];
 
-	int MAX_SPIKES = 100;
+	const int MAX_SPIKES = 64;
 	char nSpikes = 0;
 	double refSpike[nvar];
 	double eventT[MAX_SPIKES], eventX[nvar];
@@ -191,11 +191,34 @@ void rk(int nvar, 			// number of variables of dependent variable
 
 		// POINCARE SECTION
     if(event==1) {
-      if(singlePoincare(nvar, t, step, x, xNext, rkStage, tol, pars,
+      if(spikePoincare(nvar, t, step, x, xNext, rkStage, tol, pars,
 							eventT[nSpikes], eventX)) {
 				// SPIKE FOUND
-				++nSpikes;
-				if(nSpikes == 1) { 	// FIRST SPIKE
+				if(nSpikes == 0) { 	// FIRST SPIKE
+					++nSpikes;
+					for(int j=0; j<nvar; ++j) {
+						refSpike[j] = eventX[j];
+					}
+				} else {
+					normX = fabs(refSpike[0]-eventX[0]);
+					for(int j=1; j<nvar; ++j){
+						if (fabs(refSpike[j] - eventX[j]) > normX) {
+							normX = fabs(refSpike[j] - eventX[j]);
+						}
+					}
+					if(normX < 1.0e-4) {
+						// LOOP COMPLETE
+						task.result.period = eventT[1] - eventT[0];
+						return;
+					}
+				}
+			}
+    }
+    if(event==2) { // COMPUTE SPIKES UP TO A MAXIMUM OF 64
+      if(spikePoincare(nvar, t, step, x, xNext, rkStage, tol, pars,
+							eventT[nSpikes], eventX)) {
+				// SPIKE FOUND
+				if(nSpikes == 0) { 	// FIRST SPIKE
 					for(int j=0; j<nvar; ++j) {
 						refSpike[j] = eventX[j];
 					}
@@ -208,18 +231,23 @@ void rk(int nvar, 			// number of variables of dependent variable
 					}
 					if(normX < 1.0e-4 || nSpikes == MAX_SPIKES) {
 						// LOOP COMPLETE
-						task.result.sn = (1 << nSpikes-1);
-						task.result.period = eventT[nSpikes-1] - eventT[0];
+						task.result.sn |= (1 << nSpikes);
 						double relax = eventT[1] - eventT[0];
-						for(int i=2; i<=MAX_SPIKES; ++i)
+						for(int i=2; i<nSpikes; ++i)
 							if(eventT[i] - eventT[i-1] > relax)
 								relax = eventT[i] - eventT[i-1];
 						task.result.dutyCycle = task.result.period - relax;
 						return;
 					}
 				}
+				++nSpikes;
+				if(nSpikes == MAX_SPIKES) {
+					task.result.sn |= 0x8000000000000000;
+					task.result.dutyCycle = task.result.period;
+				}
 			}
     }
+
 
 		// DENSE OUTPUT
 		while(denseT + denseStep - t - step < 1.0e-15) {

@@ -11,7 +11,7 @@ void f(double t, double *rop, double *x, double *p) {
   double aux[nvar];
 
   // p[0] -> vthKS
-  // p[1] -> g_syn
+  // p[1] -> Iext
 
   double ninf, minf, cinf, taum, tauc, ICa, IK, IKS, IL, GV;
 
@@ -28,7 +28,7 @@ void f(double t, double *rop, double *x, double *p) {
   IKS = (0.15) * x[2] * (x[0]-(-80.0));
   IL = (2.0) * (x[0]-(-60.0));
 
-  aux[0] = (-(ICa + IK + IL + IKS) + (35.5))/(1.2);
+  aux[0] = (-(ICa + IK + IL + IKS) + (p[1]))/(1.2);
   aux[1] = ((4.9) * (minf - x[1])) * taum;
   aux[2] = ((0.005) * (cinf - x[2])) * tauc;
 
