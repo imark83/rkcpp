@@ -1,10 +1,8 @@
 
 #ifndef __RK_HPP__
 #define __RK_HPP__
-#include "buffer.hpp"
-#include <queue>
-#include <utility>
 
+#include "common.hpp"
 // performs an RK step. Returns -1 if rejected,
 // otherwise returns FACTOR for next step size
 
@@ -20,20 +18,17 @@ void computeStages (int nvar, 		// number of variables
 			double x[],								// integrated variable
 			double t,										// integration variable
 	 		double h, 									// step size
-			double *pars,  							// parameters
-      Buffer *retard);
-			// cardioFun f);
+			double *pars); 							// parameters
 
 //
-double rk(int nvar, 					// number of variables of dependent variable
-	double x[], 							  // dependent variable
-	double t0, 								  // initial time
-	double tf, 									// end time
-	double denseStep,						// dense step for output
-	double *pars, 							// parameters
-	double tol,									// parameters
-	int event,									// variable to compute poincare sections. -1 none
-	double eventVal,						// poincare section value
-          Buffer *retard, std::deque<std::pair<int, double>>* results = nullptr);
+void rk(int nvar, 			// number of variables of dependent variable
+			double x[], 				   	// dependent variable
+			double t0, 						  // initial time
+			double tf, 							// end time
+			double denseStep,				// dense step for output
+			double *pars, 					// parameters
+			double tol,							// parameters
+			int event,							// variable to compute poincare sections. -1 none
+			Task &task);
 
 #endif

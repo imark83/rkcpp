@@ -13,46 +13,45 @@ using namespace std;
 
 
 
-void computeStages (int nvar, 		// number of variables
+void computeStages(int nvar, 		// number of variables
 			double rkStage[],					// RK stages
 			double x[],								// integrated variable
 			double t,										// integration variable
 	 		double h, 									// step size
-			double *pars,							// parameters
-      Buffer *retard) {
+			double *pars) {							// parameters
 			// cardioFun f);
 
 	// COMPUTE STAGES OF THE STEP(assume we have an autonomous system)
 	// 2
 	for(int j=0; j<nvar; ++j) rkStage[1*nvar+j] = x[j]
-					+ h * (A21*rkStage[j]);
-	f(t + C2*h, (rkStage + 1*nvar), (rkStage + 1*nvar), pars, retard);
+					+ h *(A21*rkStage[j]);
+	f(t + C2*h,(rkStage + 1*nvar),(rkStage + 1*nvar), pars);
 	// 3
 	for(int j=0; j<nvar; ++j) rkStage[2*nvar+j] = x[j]
-					+ h * (A31*rkStage[j] + A32*rkStage[1*nvar+j]);
-	f(t + C3*h, (rkStage + 2*nvar), (rkStage + 2*nvar), pars, retard);
+					+ h *(A31*rkStage[j] + A32*rkStage[1*nvar+j]);
+	f(t + C3*h,(rkStage + 2*nvar),(rkStage + 2*nvar), pars);
 	// 4
 	for(int j=0; j<nvar; ++j) rkStage[3*nvar+j] = x[j]
-					+ h * (A41*rkStage[j] + A42*rkStage[1*nvar+j]
+					+ h *(A41*rkStage[j] + A42*rkStage[1*nvar+j]
 					+ A43*rkStage[2*nvar+j]);
-	f(t + C4*h, (rkStage + 3*nvar), (rkStage + 3*nvar), pars, retard);
+	f(t + C4*h,(rkStage + 3*nvar),(rkStage + 3*nvar), pars);
 	// 5
 	for(int j=0; j<nvar; ++j) rkStage[4*nvar+j] = x[j]
-					+ h * (A51*rkStage[j] + A52*rkStage[1*nvar+j]
+					+ h *(A51*rkStage[j] + A52*rkStage[1*nvar+j]
 					+ A53*rkStage[2*nvar+j] + A54*rkStage[3*nvar+j]);
-	f(t + C5*h, (rkStage + 4*nvar), (rkStage + 4*nvar), pars, retard);
+	f(t + C5*h,(rkStage + 4*nvar),(rkStage + 4*nvar), pars);
 	// 6
 	for(int j=0; j<nvar; ++j) rkStage[5*nvar+j] = x[j]
-					+ h * (A61*rkStage[j] + A62*rkStage[1*nvar+j]
+					+ h *(A61*rkStage[j] + A62*rkStage[1*nvar+j]
 					+ A63*rkStage[2*nvar+j] + A64*rkStage[3*nvar+j]
 					+ A65*rkStage[4*nvar+j]);
-	f(t + C6*h, (rkStage + 5*nvar), (rkStage + 5*nvar), pars, retard);
-	// 7 (A72 = 0)
+	f(t + C6*h,(rkStage + 5*nvar),(rkStage + 5*nvar), pars);
+	// 7(A72 = 0)
 	for(int j=0; j<nvar; ++j) rkStage[6*nvar+j] = x[j]
-					+ h * (A71*rkStage[j] + A73*rkStage[2*nvar+j]
+					+ h *(A71*rkStage[j] + A73*rkStage[2*nvar+j]
 					+ A74*rkStage[3*nvar+j] + A75*rkStage[4*nvar+j]
 					+ A76*rkStage[5*nvar+j]);
-	f(t + C7*h, (rkStage + 6*nvar), (rkStage + 6*nvar), pars, retard);
+	f(t + C7*h,(rkStage + 6*nvar),(rkStage + 6*nvar), pars);
 
 	return;
 }
@@ -66,116 +65,70 @@ double estimateError(int nvar, double rkStage[], double h) {
 	return error * h;
 }
 
-void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
-                   double rkStage[], double eventVal,
-                   deque<pair<int, double>>* results) {
 
-	double eventT;
-	double eventX[nvar];
-  for(int k=0; k<3; ++k) {
-    if ((x[3*k]-eventVal)*(xNext[3*k]-eventVal) < 0.0
-            && (xNext[3*k]-eventVal) > 0.0) {
-      double x_L, x_M; //, x_R;
-      double th_L=0.0, th_M=0.5, th_R=1.0;
-      x_L = x[3*k];
-      x_M = denseEval(nvar, rkStage, x, step, 3*k, th_M);
-      // x_R = xNext[event];
 
-      double err = fabs(x_M - eventVal);
-      int numIter = 0;
-      while(err > 1.0e-8 && numIter++ < 50) {
-        if((x_M-eventVal)*(x_L-eventVal) < 0) {
-          // x_R = x_M;
-          th_R = th_M;
-          th_M = 0.5*(th_L+th_R);
-          x_M = denseEval(nvar, rkStage, x, step, 3*k, th_M);
-        } else {
-          x_L = x_M;
-          th_L = th_M;
-          th_M = 0.5*(th_L+th_R);
-          x_M = denseEval(nvar, rkStage, x, step, 3*k, th_M);
-        }
-        err = fabs(x_M - eventVal);
-      }
-      for(int j=0; j<nvar; ++j)
-        eventX[j] = denseEval(nvar, rkStage, x, step, j,th_M);
+int singlePoincare(int nvar, double t, double step, double x[],
+				double xNext[], double rkStage[], double tol, double pars[],
+				double &eventT, double eventX[]) {
 
-      eventT = t + th_M*step;
-      results->push_back(make_pair(k, eventT));
 
-      // std::cout << k << "  " << eventT << "  ";
-//      std::cout << eventT;
-//      for(int j=0; j<3; ++j)
-//        std::cout << "  " << eventX[3*j];
-//      std::cout << std::endl;
-    }
-  }
-  return;
-}
-
-double singlePoincare (int nvar, double t, double step, double x[],
-        double xNext[], double rkStage[], double eventVal) {
-
-  static double lastT = -1.0;
+	double fx_L[nvar], fx_M[nvar], fx_R[nvar];
+	double th_L = 0.0;
+	double th_R = 1.0;
+	double th_M = 0.5;
+	for(int j=0; j<nvar; ++j){
+		fx_L[j] = rkStage[j];
+	}
+	f(t, fx_R, xNext, pars);
 
 	// double eventX[nvar];
-
-  if ((x[0]-eventVal)*(xNext[0]-eventVal) < 0.0
-          && (xNext[0]-eventVal) > 0.0) {
-    double x_L, x_M; //, x_R;
-    double th_L=0.0, th_M=0.5, th_R=1.0;
-    x_L = x[0];
-    x_M = denseEval(nvar, rkStage, x, step, 0, th_M);
-    // x_R = xNext[event];
-
-    double err = fabs(x_M - eventVal);
-    int numIter = 0;
-    while(err > 1.0e-8 && numIter++ < 50) {
-      if((x_M-eventVal)*(x_L-eventVal) < 0) {
-        // x_R = x_M;
-        th_R = th_M;
-        th_M = 0.5*(th_L+th_R);
-        x_M = denseEval(nvar, rkStage, x, step, 0, th_M);
-      } else {
-        x_L = x_M;
-        th_L = th_M;
-        th_M = 0.5*(th_L+th_R);
-        x_M = denseEval(nvar, rkStage, x, step, 0, th_M);
-      }
-      err = fabs(x_M - eventVal);
-    }
-    // for(int j=0; j<nvar; ++j)
-      // eventX[j] = denseEval(nvar, rkStage, x, step, j,th_M);
-
-    if(lastT < 0) {
-//      std::cout << "static = " << lastT << std::endl;
-      lastT = t + th_M*step;
-      return -1.0;
-    }
-//    std::cout << "static = " << lastT << std::endl;
-    return t + th_M*step - lastT;
-  }
-  return -1.0;
+	if(fx_L[0] > 0 && fx_R[0] < 0) {
+		// THERE IS A MAXIMUM(SPIKE)
+		for(int j=0; j<nvar; ++j)
+			fx_M[j] = denseEval(nvar, rkStage, x, step, j, th_M);
+		f(t, fx_M, fx_M, pars);
+		do {
+			if(fx_M[0] > 0.0) {
+				th_L = th_M;
+				th_M = (th_R + th_L) / 2.0;
+				for(int j=0; j<nvar; ++j) {
+					fx_L[j] = fx_M[j];
+					fx_M[j] = denseEval(nvar, rkStage, x, step, j, th_M);
+				}
+				f(t, fx_M, fx_M, pars);
+			} else {
+				th_R = th_M;
+				th_M = (th_R + th_L) / 2.0;
+				for(int j=0; j<nvar; ++j) {
+					fx_R[j] = fx_M[j];
+					fx_M[j] = denseEval(nvar, rkStage, x, step, j, th_M);
+				}
+				f(t, fx_M, fx_M, pars);
+			}
+		} while(fabs(fx_M[0]) > 10.0*tol);
+		eventT = t+th_M * step;
+		for(int j=0; j<nvar; ++j) {
+			eventX[j] = denseEval(nvar, rkStage, x, step, j, th_M);
+		}
+		return 1;
+	}
+	return 0;
 }
 
 
 //
-double rk(int nvar, 					// number of variables of dependent variable
-	double x[], 				   			// dependent variable
-	double t0, 						  		// initial time
-	double tf, 									// end time
-	double denseStep,						// dense step for output
-	double *pars, 							// parameters
-	double tol,									// parameters
-	int event,									// variable to compute poincare sections. -1 none
-	double eventVal,   					// poincare section value
-    Buffer *retard,
-    deque<pair<int, double>>* results
-          ) {
-	// cardioFun f);
+void rk(int nvar, 			// number of variables of dependent variable
+			double x[], 				   	// dependent variable
+			double t0, 						  // initial time
+			double tf, 							// end time
+			double denseStep,				// dense step for output
+			double *pars, 					// parameters
+			double tol,							// parameters
+			int event,							// variable to compute poincare sections. -1 none
+			Task &task) {
 
 
-	double step = 1.0e-6;	// INTEGRATION STEP SIZE
+	double step = 1.0e-6;			// INTEGRATION STEP SIZE
 	double rkStage[7*nvar];		// RK STAGES
 	double t = t0;							// integration time
 	double denseT = t0;							// time for dense output
@@ -185,11 +138,16 @@ double rk(int nvar, 					// number of variables of dependent variable
 	// VARIABLES FOR SPIKE NUMBER COMPUTATION
 	double xNext[nvar];
 
+	int MAX_SPIKES = 100;
+	char nSpikes = 0;
+	double refSpike[nvar];
+	double eventT[MAX_SPIKES], eventX[nvar];
+
 
 	// INITIALIZE FSAL STAGE(store in stage 0)
 	for(int j=0; j<nvar; ++j) rkStage[j] = x[j];
 
-	f(t, rkStage, rkStage, pars, retard);
+	f(t, rkStage, rkStage, pars);
 
 	double fac;									// step size correction factor
 	char endOfIntegration = 0;	// end of integration flag
@@ -203,7 +161,7 @@ double rk(int nvar, 					// number of variables of dependent variable
 	// MAIN LOOP
 	while(!endOfIntegration) {
 		// ++nsteps;
-		computeStages(nvar, rkStage, x, t, step, pars, retard);
+		computeStages(nvar, rkStage, x, t, step, pars);
 		double error = estimateError(nvar, rkStage, step);
 
 
@@ -222,27 +180,49 @@ double rk(int nvar, 					// number of variables of dependent variable
 		if(tf-t < step) {
 			endOfIntegration = 1;
 			step = tf-t;
-      computeStages(nvar, rkStage, x, t, step, pars, retard);
+      computeStages(nvar, rkStage, x, t, step, pars);
 		}
 
 
 		// USE THE 5TH ORDER RK TO GO AHEAD(B2 = B7 = 0)
-		for(int j=0; j<nvar; ++j) xNext[j] = x[j] + step * (B1*rkStage[j] +
+		for(int j=0; j<nvar; ++j) xNext[j] = x[j] + step *(B1*rkStage[j] +
 			 		B3*rkStage[2*nvar+j] + B4*rkStage[3*nvar+j] + B5*rkStage[4*nvar+j] +
 					B6*rkStage[5*nvar+j]);
 
 		// POINCARE SECTION
     if(event==1) {
-      double retVal = singlePoincare(nvar, t, step, x, xNext, rkStage, eventVal);
-      if(retVal>0) {
-        return retVal;
-      }
+      if(singlePoincare(nvar, t, step, x, xNext, rkStage, tol, pars,
+							eventT[nSpikes], eventX)) {
+				// SPIKE FOUND
+				++nSpikes;
+				if(nSpikes == 1) { 	// FIRST SPIKE
+					for(int j=0; j<nvar; ++j) {
+						refSpike[j] = eventX[j];
+					}
+				} else {
+					normX = fabs(refSpike[0]-eventX[0]);
+					for(int j=1; j<nvar; ++j){
+						if (fabs(refSpike[j] - eventX[j]) > normX) {
+							normX = fabs(refSpike[j] - eventX[j]);
+						}
+					}
+					if(normX < 1.0e-4 || nSpikes == MAX_SPIKES) {
+						// LOOP COMPLETE
+						task.result.sn = (1 << nSpikes-1);
+						task.result.period = eventT[nSpikes-1] - eventT[0];
+						double relax = eventT[1] - eventT[0];
+						for(int i=2; i<=MAX_SPIKES; ++i)
+							if(eventT[i] - eventT[i-1] > relax)
+								relax = eventT[i] - eventT[i-1];
+						task.result.dutyCycle = task.result.period - relax;
+						return;
+					}
+				}
+			}
     }
-    if(event==2)
-        fullPoincare (nvar, t, step, x, xNext, rkStage, eventVal, results);
 
 		// DENSE OUTPUT
-		while (denseT + denseStep - t - step < 1.0e-15) {
+		while(denseT + denseStep - t - step < 1.0e-15) {
 			denseT += denseStep;
 			double th = (denseT - t) / step;
 //            std::cout << denseT;
@@ -257,10 +237,6 @@ double rk(int nvar, 					// number of variables of dependent variable
 		t += step;
 
 
-    retard[0].push_back(t, x[9]);
-    retard[1].push_back(t, x[10]);
-    retard[2].push_back(t, x[11]);
-
 
 		// ESTIMATE FACTOR FOR NEXT STEP SIZE
 		fac = 0.8*pow((tol/error), 0.2);	// multiplier for next step size
@@ -274,6 +250,5 @@ double rk(int nvar, 					// number of variables of dependent variable
 		for(int j=0; j<nvar; ++j) rkStage[j] = rkStage[6*nvar+j];
 
 	}
-	return 0.0;
-
+	return;
 }
