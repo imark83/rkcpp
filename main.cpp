@@ -15,7 +15,7 @@
 
 
 const int M = 10; // Number of points per dimension
-const int max_chunkSize = 5; // Max number of tasks sent to a worker
+const int max_chunkSize = 5; // Max number of allTasks sent to a worker
 const double g_vthKS[] = {-28.0, -22};
 const double g_Iext[] = {35.0, 36.0};
 
@@ -84,10 +84,10 @@ int main(int argc, char** argv) {
 
 
   int taskSize = M*M;
-  vector<Task> tasks;
+  vector<Task> allTasks;
   char *buffer;
   header_t *header;
-  result_t *rop;
+  Task *task;
   int bufferLen = 0;
 
   if(proc_id > taskSize) {
@@ -106,13 +106,11 @@ int main(int argc, char** argv) {
     int completedTask = 0;
 
 
-    tasks.resize(M*M);
-    // Setup tasks
+    allTasks.resize(M*M);
+    // Setup allTasks
     for(int i = 0; i<M; ++i)
-      for(int j = 0; j<M; ++j) {
-        Task toEnqueue(M*i+j, i, j);
-        tasks[M*i+j] = toEnqueue;
-      }
+      for(int j = 0; j<M; ++j)
+        allTasks[M*i+j] = Task(M*i+j, i, j);
 
 
     // MAIN COMMUNICATION LOOP
@@ -132,28 +130,24 @@ int main(int argc, char** argv) {
             case GIVE_ME: {
               cerr << "proc " << worker << " asks for work" << endl;
               if(pendingTask) {
-                delete [] buffer;
+                cerr << "I have " << pendingTask << " pending allTasks" << endl;
                 int chunkSize = min(max_chunkSize, pendingTask);
-                bufferLen = sizeof(header_t) + 2*chunkSize*sizeof(double);
+                cerr << "I send you " << chunkSize << " allTasks" << endl;
+
+                bufferLen = sizeof(header_t) + chunkSize*sizeof(Task);
                 buffer = new char[bufferLen];
                 header = (header_t *) buffer;
-                double *data0 = (double *) (buffer + sizeof(header_t));
-                double *data1 =
-                (double *) (buffer + sizeof(header)+chunkSize*sizeof(double));
+                task = (Task *) (buffer + sizeof(header_t));
 
                 header->type = GIVE_YOU;
                 header->index = taskSize - pendingTask;
                 header->chunkSize = chunkSize;
                 for(int i=0; i<chunkSize; ++i) {
-                  data0[i] = tasks[header->index+i].vthKS;
-                  data1[i] = tasks[header->index+i].Iext;
+                  task[i] = allTasks[header->index+i];
                 }
                 pendingTask -= chunkSize;
               } else {
-                bufferLen = sizeof(header_t);
                 header->type = NO_MORE;
-                header->index = -1;
-                header->chunkSize = 0;
                 --activeWorkers;
               }
 
@@ -163,12 +157,15 @@ int main(int argc, char** argv) {
               break;
             }
             case TASK_DONE: {
+              task = (Task *) (buffer + sizeof(header_t));
               cerr << "proc " << worker << " returns work" << endl;
               completedTask += header->chunkSize;
-              rop = (result_t *) (buffer + sizeof(header_t));
+
               for(int i=0; i<header->chunkSize; ++i)
-                tasks[header->index+i].result = rop[i];
+                allTasks[header->index+i].result = task[i].result;
+
               delete [] buffer;
+              cerr << "allTasks stored" << endl;
               break;
             }
           }
@@ -180,19 +177,20 @@ int main(int argc, char** argv) {
   else {
     while(1) {
       buffer = new char[sizeof(header_t)];
-      header_t *header = (header_t *) buffer;
+      header = (header_t *) buffer;
       header->type = GIVE_ME;
       header->index = -1; header->chunkSize = 0;
+      header->chunkSize = 0;
       cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and want work" << endl;
       MPI_Send(buffer, sizeof(header_t), MPI_CHAR, 0,
               0, MPI_COMM_WORLD);
+      delete [] buffer;
 
       MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
       MPI_Get_count(&status, MPI_BYTE, &bufferLen);
-      delete [] buffer;
       buffer = new char[bufferLen];
       header = (header_t *) buffer;
-      MPI_Recv(buffer, sizeof(header_t), MPI_CHAR, 0,
+      MPI_Recv(buffer, bufferLen, MPI_CHAR, 0,
               0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
       if(header->type == NO_MORE) {
@@ -201,26 +199,25 @@ int main(int argc, char** argv) {
         delete [] buffer;
         break;
       }
+
+      task = (Task *) (buffer + sizeof(header_t));
       cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive task " << buffer[1] << endl;
-      int index = header->index;
-      int chunkSize = header->chunkSize;
+
+      for(int i=0; i<header->chunkSize; ++i) {
+        cout << "data0[" << i <<"] = " << task[i].vthKS << endl;
+        cout << "data1[" << i <<"] = " << task[i].Iext << endl;
+      }
 
 
 
       // DO TASK
-      delete [] buffer;
-      bufferLen = sizeof(header_t) + chunkSize*sizeof(result_t);
-      header = (header_t *) buffer;
-      rop = (result_t *) (buffer + sizeof(header_t));
-      header->type = TASK_DONE;
-      header->index = index;
-      header->chunkSize = chunkSize;
-      for(int i=0; i<chunkSize; ++i) {
-        rop[i].sn=55;
-        rop[i].period = 999.0;
-        rop[i].dutyCycle = 0.77;
+      for(int i=0; i<header->chunkSize; ++i) {
+        task[i].result.sn=55;
+        task[i].result.period = 999.0;
+        task[i].result.dutyCycle = 0.77;
       }
 
+      header->type = TASK_DONE;
       MPI_Send(buffer, bufferLen, MPI_CHAR, 0,
               0, MPI_COMM_WORLD);
       delete [] buffer;
@@ -229,16 +226,15 @@ int main(int argc, char** argv) {
 
 
   // ROOT NODE WRITES OUTPUT
-  // if(proc_id == 0) {
-  //   cerr << "tasks size = " << tasks.size() << endl;
-  //   // OK... print it on screen!
-  //   for(auto &T : tasks) {
-  //     cout << T.phi21 << "\t" << T.phi31;
-  //     for(auto& pto : T.result)
-  //     cout << "\t" << pto.first << "\t" << pto.second;
-  //     cout << endl;
-  //   }
-  // }
+  if(proc_id == 0) {
+    cerr << "allTasks size = " << allTasks.size() << endl;
+    // OK... print it on screen!
+    for(int i=0; i<allTasks.size(); ++i) {
+      cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.dutyCycle << endl;
+      // for(auto& pto : T.result)
+      // cout << "\t" << pto.first << "\t" << pto.second;
+    }
+  }
 
   MPI_Finalize();
 
