@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cmath>
-#include "buffer.hpp"
 
 
 
@@ -10,8 +9,6 @@ void f(double t, double *rop, double *x, double *p) {
   int nvar=3;
   double aux[nvar];
 
-  // p[0] -> vthKS
-  // p[1] -> Iext
 
   double ninf, minf, cinf, taum, tauc, ICa, IK, IKS, IL, GV;
 
@@ -34,7 +31,7 @@ void f(double t, double *rop, double *x, double *p) {
 
 
   rop[0] = aux[0];
-  rop[0] = aux[1];
+  rop[1] = aux[1];
   rop[2] = aux[2];
 
 	return;
