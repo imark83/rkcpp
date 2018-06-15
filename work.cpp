@@ -12,9 +12,9 @@ void work(Task &task) {
   int nvar = 3;
   double x[] = {-5.0, 0.0, 0.0};
   double pars[] = {task.vthKS, task.Iext};
-  rk(nvar, x, 0, 1055.0, 1055.0, pars, 1.0e-8, 0, task);
+  rk(nvar, x, 0, 1000.0, 1000.0, pars, 1.0e-8, 0, task);
   // rk(nvar, x, 0, 200.0, 200.0, pars, 1.0e-8, 1, task);
-  rk(nvar, x, 0, 200.0, 200.0, pars, 1.0e-8, 2, task);
+  rk(nvar, x, 0, 5000.0, 5000.0, pars, 1.0e-8, 2, task);
 
 
 }

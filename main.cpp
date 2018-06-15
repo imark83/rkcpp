@@ -17,10 +17,10 @@
 
 
 
-const int M = 1; // Number of points per dimension
-const int max_chunkSize = 4; // Max number of allTasks sent to a worker
-const double g_vthKS[] = {-24.0, -22};
-const double g_Iext[] = {35.5, 36.0};
+const int M = 64; // Number of points per dimension
+const int max_chunkSize = 16; // Max number of allTasks sent to a worker
+const double g_vthKS[] = {-28.0, -24};
+const double g_Iext[] = {35.0, 36.0};
 
 using namespace std;
 
@@ -186,11 +186,34 @@ int main(int argc, char** argv) {
     usleep(100);
     cerr << "allTasks size = " << allTasks.size() << endl;
     // OK... print it on screen!
+
+    int64_t *sn = new int64_t[M*M];
+    double *duty = new double[M*M];
+    double *period = new double[M*M];
+
+
     for(int i=0; i<allTasks.size(); ++i) {
-      cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.sn << ", " << allTasks[i].result.period << ", " << allTasks[i].result.dutyCycle << endl;
+      sn[i] = allTasks[i].result.sn;
+      duty[i] = allTasks[i].result.dutyCycle;
+      period[i] = allTasks[i].result.period;
+      // cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.sn << ", " << allTasks[i].result.period << ", " << allTasks[i].result.dutyCycle << endl;
       // for(auto& pto : T.result)
       // cout << "\t" << pto.first << "\t" << pto.second;
     }
+    std::ofstream fout("sn.bin", std::ofstream::binary);
+    fout.write((const char*) sn, M*M*sizeof(int64_t));
+    fout.close();
+
+    fout.open("duty.bin", std::ofstream::binary);
+    fout.write((const char*) duty, M*M*sizeof(double));
+
+    fout.open("period.bin", std::ofstream::binary);
+    fout.write((const char*) duty, M*M*sizeof(double));
+
+
+    delete [] sn;
+    delete [] duty;
+    delete [] period;
   }
 
   MPI_Finalize();

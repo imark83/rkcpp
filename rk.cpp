@@ -153,10 +153,10 @@ void rk(int nvar, 			// number of variables of dependent variable
 	char endOfIntegration = 0;	// end of integration flag
 
 
-   std::cout << denseT;
-   for(int j=0; j<3; ++j)
-       std::cout << "  " << x[j];
-   std::cout << std::endl;
+   // std::cout << denseT;
+   // for(int j=0; j<3; ++j)
+   //     std::cout << "  " << x[j];
+   // std::cout << std::endl;
 
 	// MAIN LOOP
 	while(!endOfIntegration) {
@@ -254,14 +254,14 @@ void rk(int nvar, 			// number of variables of dependent variable
     // std::cout << x[1] << std::endl;
 
 		// DENSE OUTPUT
-		while(denseT + denseStep - t - step < 1.0e-15) {
-			denseT += denseStep;
-			double th = (denseT - t) / step;
-           std::cout << denseT;
-           for(int j=0; j<3; ++j)
-               std::cout << "  " << denseEval(nvar, rkStage, x, step, j,th);
-           std::cout << std::endl;
-		}
+		// while(denseT + denseStep - t - step < 1.0e-15) {
+		// 	denseT += denseStep;
+		// 	double th = (denseT - t) / step;
+    //        std::cout << denseT;
+    //        for(int j=0; j<3; ++j)
+    //            std::cout << "  " << denseEval(nvar, rkStage, x, step, j,th);
+    //        std::cout << std::endl;
+		// }
 
 
 		// USE THE 5TH ORDER RK TO GO AHEAD(B2 = B7 = 0)
