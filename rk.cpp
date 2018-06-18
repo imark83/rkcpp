@@ -142,6 +142,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 	char nSpikes = 0;
 	double refSpike[nvar];
 	double eventT[MAX_SPIKES], eventX[nvar];
+  task.result.sn=1;
 
 
 	// INITIALIZE FSAL STAGE(store in stage 0)
@@ -195,6 +196,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 							eventT[nSpikes], eventX)) {
 				// SPIKE FOUND
 				if(nSpikes == 0) { 	// FIRST SPIKE
+          task.result.sn=0;
 					++nSpikes;
 					for(int j=0; j<nvar; ++j) {
 						refSpike[j] = eventX[j];
