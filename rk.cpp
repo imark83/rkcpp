@@ -234,7 +234,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 						// LOOP COMPLETE
 						task.result.sn |= (1 << nSpikes);
 						double relax = eventT[1] - eventT[0];
-						for(int i=2; i<nSpikes; ++i) {
+						for(int i=2; i<=nSpikes; ++i) {
 							if(eventT[i] - eventT[i-1] > relax)
 								relax = eventT[i] - eventT[i-1];
             }
@@ -251,7 +251,6 @@ void rk(int nvar, 			// number of variables of dependent variable
 			}
     }
 
-    // std::cout << x[1] << std::endl;
 
 		// DENSE OUTPUT
 		// while(denseT + denseStep - t - step < 1.0e-15) {
