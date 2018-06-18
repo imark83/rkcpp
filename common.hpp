@@ -27,10 +27,10 @@ public:
       : index(_index), i(_i), j(_j) {
     vthKS = g_vthKS[0];
     if(M>1)
-      vthKS += _i*(g_vthKS[1]-g_vthKS[0])/(M-1.0);
+      vthKS += _j*(g_vthKS[1]-g_vthKS[0])/(M-1.0);
     Iext = g_Iext[0];
     if(M>1)
-      Iext += _j*(g_Iext[1]-g_Iext[0])/(M-1.0);
+      Iext += _i*(g_Iext[1]-g_Iext[0])/(M-1.0);
   }
 };
 

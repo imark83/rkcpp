@@ -17,10 +17,10 @@
 
 
 
-const int M = 64; // Number of points per dimension
-const int max_chunkSize = 16; // Max number of allTasks sent to a worker
-const double g_vthKS[] = {-28.0, -24};
-const double g_Iext[] = {35.0, 36.0};
+const int M = 128; // Number of points per dimension
+const int max_chunkSize = 8; // Max number of allTasks sent to a worker
+const double g_vthKS[] = {-32.0, -19.0};
+const double g_Iext[] = {34.5, 36.5};
 
 using namespace std;
 
@@ -200,15 +200,19 @@ int main(int argc, char** argv) {
       // for(auto& pto : T.result)
       // cout << "\t" << pto.first << "\t" << pto.second;
     }
-    std::ofstream fout("sn.bin", std::ofstream::binary);
+    std::ofstream fout;
+
+    fout.open("sn.bin", std::ofstream::binary);
     fout.write((const char*) sn, M*M*sizeof(int64_t));
     fout.close();
 
     fout.open("duty.bin", std::ofstream::binary);
     fout.write((const char*) duty, M*M*sizeof(double));
+    fout.close();
 
     fout.open("period.bin", std::ofstream::binary);
-    fout.write((const char*) duty, M*M*sizeof(double));
+    fout.write((const char*) period, M*M*sizeof(double));
+    fout.close();
 
 
     delete [] sn;
