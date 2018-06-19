@@ -14,6 +14,10 @@ obj/%.o: %.cpp
 all: clean
 	make aaa
 
+lorenz: all
+	cp aaa lorenz
+
+
 
 .PHONY: clean
 

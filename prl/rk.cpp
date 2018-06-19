@@ -196,7 +196,6 @@ void rk(int nvar, 			// number of variables of dependent variable
 							eventT[nSpikes], eventX)) {
 				// SPIKE FOUND
 				if(nSpikes == 0) { 	// FIRST SPIKE
-          task.result.sn=0;
 					++nSpikes;
 					for(int j=0; j<nvar; ++j) {
 						refSpike[j] = eventX[j];
@@ -235,6 +234,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 					if(normX < 1.0e-4 || nSpikes == MAX_SPIKES) {
 						// LOOP COMPLETE
 						task.result.sn |= (1 << nSpikes);
+						task.result.sn &= ~0x1;
 						double relax = eventT[1] - eventT[0];
 						for(int i=2; i<=nSpikes; ++i) {
 							if(eventT[i] - eventT[i-1] > relax)
@@ -247,6 +247,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 				}
 				++nSpikes;
 				if(nSpikes == MAX_SPIKES) {
+					task.result.sn &= ~0x1;	
 					task.result.sn |= 0x8000000000000000;
 					task.result.dutyCycle = task.result.period;
 				}
