@@ -138,10 +138,10 @@ void rk(int nvar, 			// number of variables of dependent variable
 	// VARIABLES FOR SPIKE NUMBER COMPUTATION
 	double xNext[nvar];
 
-	const int MAX_SPIKES = 64;
+	const int MAX_SPIKES = 63;
 	int nSpikes = 0;
 	double refSpike[nvar];
-	double eventT[MAX_SPIKES], eventX[nvar];
+	double eventT[MAX_SPIKES+1], eventX[nvar];
   task.result.sn=1;
 
 
@@ -247,7 +247,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 				}
 				++nSpikes;
 				if(nSpikes == MAX_SPIKES) {
-					task.result.sn &= ~0x1;	
+					task.result.sn &= ~0x1;
 					task.result.sn |= 0x8000000000000000;
 					task.result.dutyCycle = task.result.period;
 				}
