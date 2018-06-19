@@ -139,7 +139,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 	double xNext[nvar];
 
 	const int MAX_SPIKES = 64;
-	char nSpikes = 0;
+	int nSpikes = 0;
 	double refSpike[nvar];
 	double eventT[MAX_SPIKES], eventX[nvar];
   task.result.sn=1;

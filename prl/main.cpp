@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
     double *period = new double[M*M];
 
 
-    for(int i=0; i<allTasks.size(); ++i) {
+    for(int i=0; i<(int)allTasks.size(); ++i) {
       sn[i] = allTasks[i].result.sn;
       duty[i] = allTasks[i].result.dutyCycle;
       period[i] = allTasks[i].result.period;

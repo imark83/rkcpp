@@ -10,7 +10,8 @@ void f(double t, double *rop, double *x, double *p) {
   double aux[nvar];
 
 
-  double ninf, minf, cinf, taum, tauc, ICa, IK, IKS, IL, GV;
+  double ninf, minf, cinf, taum, tauc, ICa, IK, IKS, IL;
+  // double GV;
 
   // Neurona 0
   ninf = 1/(1+exp(-2*(0.055)*(x[0]-(-1.2))));
