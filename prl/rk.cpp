@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdio>
 #include <math.h>
+#include <stdint.h>
 #include "rk.hpp"
 #include "rk_coefs.hpp"
 #include "fun.hpp"
@@ -231,10 +232,10 @@ void rk(int nvar, 			// number of variables of dependent variable
 							normX = fabs(refSpike[j] - eventX[j]);
 						}
 					}
-					if(normX < 1.0e-4 || nSpikes == MAX_SPIKES) {
+					if(normX < 1.0e-4) {
 						// LOOP COMPLETE
+            task.result.sn &= ~((uint64_t)(1<<0));
 						task.result.sn |= (1 << nSpikes);
-						task.result.sn &= ~0x1;
 						double relax = eventT[1] - eventT[0];
 						for(int i=2; i<=nSpikes; ++i) {
 							if(eventT[i] - eventT[i-1] > relax)
@@ -247,9 +248,11 @@ void rk(int nvar, 			// number of variables of dependent variable
 				}
 				++nSpikes;
 				if(nSpikes == MAX_SPIKES) {
-					task.result.sn &= ~0x1;
-					task.result.sn |= 0x8000000000000000;
+					task.result.sn &= ~((uint64_t)(1<<0));
+					task.result.sn |= ((uint64_t) 1) << 63;
 					task.result.dutyCycle = task.result.period;
+
+          return;
 				}
 			}
     }
@@ -284,5 +287,6 @@ void rk(int nvar, 			// number of variables of dependent variable
 		for(int j=0; j<nvar; ++j) rkStage[j] = rkStage[6*nvar+j];
 
 	}
+
 	return;
 }
