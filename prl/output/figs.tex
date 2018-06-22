@@ -1,0 +1,115 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[margin=2cm]{geometry}
+
+\usepackage{amsmath}
+
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+\usetikzlibrary{external}
+\tikzexternalize[prefix=figures/]
+
+
+\begin{document}
+\newlength{\imagewidth}
+\newlength{\colorbarwidth}
+\setlength{\imagewidth}{8cm}
+\setlength{\colorbarwidth}{5mm}
+
+
+
+
+%% HOLMES. SN FULL
+\tikzsetnextfilename{H-sn-full}
+\begin{tikzpicture}[x=1cm,y=1cm]
+    % FIGURE
+    \node[inner sep=0] (FIG) {\includegraphics[width=\imagewidth,height=\imagewidth]{H-sn-full.png}};
+    \draw[thick] (FIG.south west) rectangle (FIG.north east);
+
+    % COLORBAR
+    \node[right=3mm,inner sep=0,outer sep=0] (BAR) at (FIG.east) {\includegraphics[width=\colorbarwidth,height=\imagewidth]{bar-sn.png}};
+    \draw[thick] (BAR.south west) rectangle (BAR.north east);
+
+    % LABELS
+    % Horizontal: VthKS ∈ [-32.0, -19.0]
+    % Vertical Iext ∈ [34.5, 36.5]
+    \foreach \i/\vth/\iext in {
+    0.0/-32/34.5,0.25/-28.75/35,0.5/-25.5/35.5,0.75/-22.25/36,1.0/-19/36.5} {
+      \draw[thick] ($(FIG.south west)!\i!(FIG.south east)$)-- +(0,-2mm) node[below] {\scriptsize \vth};
+      \draw[thick] ($(FIG.south west)!\i!(FIG.north west)$)-- +(-2mm,0) node[left] {\scriptsize \iext};
+      % \draw[thick] (\i,0) -- +(0,-2mm) node[below] {\scriptsize \val};
+    }
+    \node[below=5mm] at (FIG.south) {$v^\text{th}_\text{KS}$};
+    \node[left=1.3cm,anchor=center,rotate=90] at (FIG.west) {$I_\text{ext}$};
+
+    % LABELS OF COLORBAR
+    \foreach \i/\val in {0/0, 0.19/4, 0.38/8, 0.57/12, 0.76/16, 0.95/20} {
+      \node[inner sep=0,above right=0.5mm] at ($(BAR.south east)!\i!(BAR.north east) $) {\val};
+    }
+\end{tikzpicture}
+
+
+
+% HOLMES DC FULL
+\tikzsetnextfilename{H-dc-full}
+\begin{tikzpicture}[x=1cm,y=1cm]
+    % FIGURE
+    \node[inner sep=0] (FIG) {\includegraphics[width=\imagewidth,height=\imagewidth]{H-dc-full.png}};
+    \draw[thick] (FIG.south west) rectangle (FIG.north east);
+
+    % COLORBAR
+    \node[right=3mm,inner sep=0,outer sep=0] (BAR) at (FIG.east) {\includegraphics[width=\colorbarwidth,height=\imagewidth]{bar-dc.png}};
+    \draw[thick] (BAR.south west) rectangle (BAR.north east);
+
+    % LABELS
+    % Horizontal: VthKS ∈ [-32.0, -19.0]
+    % Vertical Iext ∈ [34.5, 36.5]
+    \foreach \i/\vth/\iext in {
+    0.0/-32/34.5,0.25/-28.75/35,0.5/-25.5/35.5,0.75/-22.25/36,1.0/-19/36.5} {
+      \draw[thick] ($(FIG.south west)!\i!(FIG.south east)$)-- +(0,-2mm) node[below] {\scriptsize \vth};
+      \draw[thick] ($(FIG.south west)!\i!(FIG.north west)$)-- +(-2mm,0) node[left] {\scriptsize \iext};
+      % \draw[thick] (\i,0) -- +(0,-2mm) node[below] {\scriptsize \val};
+    }
+    \node[below=5mm] at (FIG.south) {$v^\text{th}_\text{KS}$};
+    \node[left=1.3cm,anchor=center,rotate=90] at (FIG.west) {$I_\text{ext}$};
+
+    % LABELS OF COLORBAR
+    \foreach \i/\val in {0/0, 0.19/0.2, 0.38/0.4, 0.57/0.6, 0.76/0.8, 0.95/1} {
+      \node[inner sep=0,above right=0.5mm] at ($(BAR.south east)!\i!(BAR.north east) $) {\val};
+    }
+\end{tikzpicture}
+
+
+
+% HOLMES DCLog FULL
+\tikzsetnextfilename{H-dcLog-full}
+\begin{tikzpicture}[x=1cm,y=1cm]
+    % FIGURE
+    \node[inner sep=0] (FIG) {\includegraphics[width=\imagewidth,height=\imagewidth]{H-dcLog-full.png}};
+    \draw[thick] (FIG.south west) rectangle (FIG.north east);
+
+    % COLORBAR
+    \node[right=3mm,inner sep=0,outer sep=0] (BAR) at (FIG.east) {\includegraphics[width=\colorbarwidth,height=\imagewidth]{bar-dc.png}};
+    \draw[thick] (BAR.south west) rectangle (BAR.north east);
+
+    % LABELS
+    % Horizontal: VthKS ∈ [-32.0, -19.0]
+    % Vertical Iext ∈ [34.5, 36.5]
+    \foreach \i/\vth/\iext in {
+    0.0/-32/34.5,0.25/-28.75/35,0.5/-25.5/35.5,0.75/-22.25/36,1.0/-19/36.5} {
+      \draw[thick] ($(FIG.south west)!\i!(FIG.south east)$)-- +(0,-2mm) node[below] {\scriptsize \vth};
+      \draw[thick] ($(FIG.south west)!\i!(FIG.north west)$)-- +(-2mm,0) node[left] {\scriptsize \iext};
+      % \draw[thick] (\i,0) -- +(0,-2mm) node[below] {\scriptsize \val};
+    }
+    \node[below=5mm] at (FIG.south) {$v^\text{th}_\text{KS}$};
+    \node[left=1.3cm,anchor=center,rotate=90] at (FIG.west) {$I_\text{ext}$};
+
+    % LABELS OF COLORBAR
+    \foreach \i/\val in {0/-5, 0.19/-4, 0.38/-3, 0.57/-2, 0.76/-1, 0.95/0} {
+      \node[inner sep=0,above right=0.5mm] at ($(BAR.south east)!\i!(BAR.north east) $) {\val};
+    }
+\end{tikzpicture}
+
+
+\end{document}

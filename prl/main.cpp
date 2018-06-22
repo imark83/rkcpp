@@ -17,7 +17,7 @@
 
 
 
-const int M = 128; // Number of points per dimension
+const int M = 1024; // Number of points per dimension
 const int max_chunkSize = 16; // Max number of allTasks sent to a worker
 const double g_vthKS[] = {-32.0, -19.0};
 const double g_Iext[] = {34.5, 36.5};
