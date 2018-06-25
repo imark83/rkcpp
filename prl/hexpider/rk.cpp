@@ -101,11 +101,11 @@ void fullPoincare (int nvar, double t, double step, double x[], double xNext[],
       eventT = t + th_M*step;
       results->push_back(make_pair(k, eventT));
 
-      std::cout << k << "  " << eventT << "  ";
-     std::cout << eventT;
-     for(int j=0; j<3; ++j)
-       std::cout << "  " << eventX[3*j];
-     std::cout << std::endl;
+      // std::cout << k << "  " << eventT << "  ";
+//      std::cout << eventT;
+//      for(int j=0; j<3; ++j)
+//        std::cout << "  " << eventX[3*j];
+//      std::cout << std::endl;
     }
   }
   return;
@@ -241,10 +241,10 @@ double rk(int nvar, 					// number of variables of dependent variable
 		while (denseT + denseStep - t - step < 1.0e-15) {
 			denseT += denseStep;
 			double th = (denseT - t) / step;
-           std::cout << denseT;
-           for(int j=0; j<3; ++j)
-               std::cout << "  " << denseEval(nvar, rkStage, x, step, 3*j,th);
-           std::cout << std::endl;
+//            std::cout << denseT;
+//            for(int j=0; j<3; ++j)
+//                std::cout << "  " << denseEval(nvar, rkStage, x, step, 3*j,th);
+//            std::cout << std::endl;
 		}
 
 
