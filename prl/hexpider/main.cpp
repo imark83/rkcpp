@@ -11,7 +11,8 @@
 
 
 const int M = 4; // Number of points per dimension
-
+const double vthks = -28.0;
+const double Iext = 35.5;
 
 using namespace std;
 
@@ -253,7 +254,7 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
 
 
   // START WITH DECOUPLED NETWORK
-  double pars[2] = {-25.0, 0.0};
+  double pars[3] = {vthks, Iext, 0.0};
   double poincareThresHold = -30.0;
   rk(nvar, y, 0.0, 4000, 4000,
         pars, 1.0e-8, 0, poincareThresHold);
