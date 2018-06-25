@@ -334,8 +334,8 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
 
 
   // COUPLE NEURONS AGAIN
-  pars[1] = 0.002;
-  rk(nvar, x, 0.0, 10000, 10000, pars,
+  pars[2] = 0.002;
+  rk(nvar, x, 0.0, 10000, 0.1, pars,
         1.0e-6, 2, poincareThresHold, addressof(result));
 
   return;
