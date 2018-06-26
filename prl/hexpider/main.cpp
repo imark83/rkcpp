@@ -10,8 +10,8 @@
 #include "rk.hpp"
 
 
-const int M = 4; // Number of points per dimension
-const double vthks = -28.0;
+const int M = 40; // Number of points per dimension
+const double vthks = -27.0;
 const double Iext = 35.5;
 
 using namespace std;
@@ -335,7 +335,7 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
 
   // COUPLE NEURONS AGAIN
   pars[2] = 0.002;
-  rk(nvar, x, 0.0, 10000, 0.1, pars,
+  rk(nvar, x, 0.0, 40000, 40000, pars,
         1.0e-6, 2, poincareThresHold, addressof(result));
 
   return;

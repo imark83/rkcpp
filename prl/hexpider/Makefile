@@ -19,4 +19,4 @@ all: clean
 .PHONY: clean
 
 clean:
-	rm -f $(OBJECTS) test
+	rm -f $(OBJECTS) aaa
