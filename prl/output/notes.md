@@ -35,30 +35,44 @@ download [raw data of Period](H-period-full.bin)
 ## HORIZONTAL HEXPIDERS
 ## V<sup>th</sup><sub>KS</sub> = -28.00, I<sub>ext</sub> = 35.5
 ![](figures/H-hexpider-28.0-35.5.svg)
+![](figures/H-evolution-28.0-35.5.svg)
 
-download [pdf figure](figures/H-hexpider-28.0-35.5.pdf)
+download [pdf figure](figures/H-hexpider-28.0-35.5.pdf) left
 download [txt data](hexpiderData/hexpider-28.00-35.5.txt)
+download [pdf figure](figures/H-evolution-28.0-35.5.pdf) right
+
 
 ## V<sup>th</sup><sub>KS</sub> = -27.00, I<sub>ext</sub> = 35.5
 ![](figures/H-hexpider-27.0-35.5.svg)
+![](figures/H-evolution-27.0-35.5.svg)
 
-download [pdf figure](figures/H-hexpider-27.0-35.5.pdf)
+download [pdf figure](figures/H-hexpider-27.0-35.5.pdf) left
 download [txt data](hexpiderData/hexpider-27.00-35.5.txt)
+download [pdf figure](figures/H-evolution-27.0-35.5.pdf) right
+
 
 ## V<sup>th</sup><sub>KS</sub> = -26.00, I<sub>ext</sub> = 35.5
 ![](figures/H-hexpider-26.0-35.5.svg)
+![](figures/H-evolution-26.0-35.5.svg)
 
-download [pdf figure](figures/H-hexpider-26.0-35.5.pdf)
+download [pdf figure](figures/H-hexpider-26.0-35.5.pdf) left
 download [txt data](hexpiderData/hexpider-26.00-35.5.txt)
+download [pdf figure](figures/H-evolution-26.0-35.5.pdf) right
+
 
 ## V<sup>th</sup><sub>KS</sub> = -25.00, I<sub>ext</sub> = 35.5
 ![](figures/H-hexpider-25.0-35.5.svg)
+![](figures/H-evolution-25.0-35.5.svg)
 
-download [pdf figure](figures/H-hexpider-25.0-35.5.pdf)
+download [pdf figure](figures/H-hexpider-25.0-35.5.pdf) left
 download [txt data](hexpiderData/hexpider-25.00-35.5.txt)
+download [pdf figure](figures/H-evolution-25.0-35.5.pdf) right
+
 
 ## V<sup>th</sup><sub>KS</sub> = -24.00, I<sub>ext</sub> = 35.5
 ![](figures/H-hexpider-24.0-35.5.svg)
+![](figures/H-evolution-24.0-35.5.svg)
 
-download [pdf figure](figures/H-hexpider-24.0-35.5.pdf)
+download [pdf figure](figures/H-hexpider-24.0-35.5.pdf) left
 download [txt data](hexpiderData/hexpider-24.00-35.5.txt)
+download [pdf figure](figures/H-evolution-24.0-35.5.pdf) right
