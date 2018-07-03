@@ -76,3 +76,26 @@ download [pdf figure](figures/H-evolution-25.0-35.5.pdf) right
 download [pdf figure](figures/H-hexpider-24.0-35.5.pdf) left
 download [txt data](hexpiderData/hexpider-24.00-35.5.txt)
 download [pdf figure](figures/H-evolution-24.0-35.5.pdf) right
+
+
+
+
+# HINDMARSH ROSE MODEL
+### Spike Counting plot
+![](figures/HR-sn-full.svg)
+
+download [pdf figure](figures/HR-sn-full.pdf)
+
+### Duty Cicle (as number in [0,1]) plot
+![](figures/HR-dc-full.svg)
+
+download [pdf figure](figures/HR-dc-full.pdf)
+
+### Log Duty Cicle (as number in [-5,0]) plot
+![](figures/HR-dcLog-full.svg)
+
+download [pdf figure](figures/HR-dcLog-full.pdf)
+
+download [raw data of SN](HR-sn-full.bin),
+download [raw data of Activity](HR-duty-full.bin),
+download [raw data of Period](HR-period-full.bin)
