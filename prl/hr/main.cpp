@@ -18,7 +18,7 @@
 
 
 const int M = 64; // Number of points per dimension
-const int max_chunkSize = 16; // Max number of allTasks sent to a worker
+const int max_chunkSize = M; // Max number of allTasks sent to a worker
 const double g_b[] = {2.5, 3.3};
 const double g_I[] = {2.0, 4.5};
 
@@ -167,10 +167,11 @@ int main(int argc, char** argv) {
       task = (Task *) (buffer + sizeof(header_t));
       cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive " << header->chunkSize << " indexed at " << header->index << endl;
 
+      double x[] = {-5.0, 0.0, 0.0};
 
       // DO TASK
       for(int i=0; i<header->chunkSize; ++i) {
-        work(task[i]);
+        work(task[i], x);
       }
 
       header->type = TASK_DONE;

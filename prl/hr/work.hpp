@@ -4,6 +4,6 @@
 #include "common.hpp"
 
 
-void work(Task &task);
+void work(Task &task, double *x);
 
 #endif
