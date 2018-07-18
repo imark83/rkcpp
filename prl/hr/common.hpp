@@ -5,17 +5,14 @@
 
 typedef struct {
   uint64_t sn;
-  double period;
-  double dutyCycle;
-  // result_t () : sn(0), period(0.0), dutyCycle(0.0) {}
-  // result_t(uint64_t _sn, double _period, double _dutyCycle)
-  //       : sn(_sn), period(_period), dutyCycle(_dutyCycle) {}
+  uint64_t bn;
+  double orbit[27];
 } result_t;
 
 class Task {
 public:
-  double b;
-  double I;
+  double km;
+  double sp;
   int index;
   int i;
   int j;
@@ -23,14 +20,14 @@ public:
 
   Task () {}
 
-  Task(int _index, int _i, int _j, const double *g_b, const double *g_I, int M)
+  Task(int _index, int _i, int _j, const double *g_km, const double *g_sp, int M)
       : index(_index), i(_i), j(_j) {
-    b = g_b[0];
+    km = g_km[0];
     if(M>1)
-      b += _j*(g_b[1]-g_b[0])/(M-1.0);
-    I = g_I[0];
+      km += _j*(g_km[1]-g_km[0])/(M-1.0);
+    sp = g_sp[0];
     if(M>1)
-      I += _i*(g_I[1]-g_I[0])/(M-1.0);
+      sp += _i*(g_sp[1]-g_sp[0])/(M-1.0);
   }
 };
 

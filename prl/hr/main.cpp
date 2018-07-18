@@ -17,10 +17,10 @@
 
 
 
-const int M = 64; // Number of points per dimension
+const int M = 8; // Number of points per dimension
 const int max_chunkSize = M; // Max number of allTasks sent to a worker
-const double g_b[] = {2.5, 3.3};
-const double g_I[] = {2.0, 4.5};
+const double g_km[] = {87.0, 88.0};
+const double g_sp[] = {1400.0, 1401.0};
 
 using namespace std;
 
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
     // Setup allTasks
     for(int i = 0; i<M; ++i)
       for(int j = 0; j<M; ++j)
-        allTasks[M*i+j] = Task(M*i+j, i, j, g_b, g_I, M);
+        allTasks[M*i+j] = Task(M*i+j, i, j, g_km, g_sp, M);
 
 
     // MAIN COMMUNICATION LOOP
@@ -167,7 +167,35 @@ int main(int argc, char** argv) {
       task = (Task *) (buffer + sizeof(header_t));
       cerr << "\t\t\tI'm " << processor_name << "-" << proc_id << " and recive " << header->chunkSize << " indexed at " << header->index << endl;
 
-      double x[] = {-5.0, 0.0, 0.0};
+      double x[27];
+            x[20] = 0.137483;
+            x[12] = 0.130489;
+            x[21] = 127.498 ;
+            x[22] = 125.711 ;
+            x[23] = 0.0046091;
+            x[6] = 0.991324;
+            x[5] = 1.36521e-6;
+            x[7] = 3.32817e-7;
+            x[9] = 1.43069e-5;
+            x[8] = 5.28378e-7;
+            x[10] = 0.00865914;
+            x[24] = 12.7657;
+            x[25] = 13.2176;
+            x[4] = 0.597462;
+            x[19] = 10.0799;
+            x[0] = -87.4094;
+            x[2] = 0.991187;
+            x[3] = 0.99421;
+            x[1] = 0.00103312;
+            x[11] = 0.00677689;
+            x[13] = 0.0119339;
+            x[14] = 0.0664083;
+            x[17] = 0.00358545;
+            x[18] = 0.995458 ;
+            x[15] = 0.00358575 ;
+            x[16] = 0.297391 ;
+            x[26] = 0.417681;
+
 
       // DO TASK
       for(int i=0; i<header->chunkSize; ++i) {
@@ -189,14 +217,14 @@ int main(int argc, char** argv) {
     // OK... print it on screen!
 
     int64_t *sn = new int64_t[M*M];
-    double *duty = new double[M*M];
-    double *period = new double[M*M];
+    // double *bn = new double[M*M];
+    // double *orbit = new double[M*M*27];
 
 
     for(int i=0; i<(int)allTasks.size(); ++i) {
       sn[i] = allTasks[i].result.sn;
-      duty[i] = allTasks[i].result.dutyCycle;
-      period[i] = allTasks[i].result.period;
+      // duty[i] = allTasks[i].result.dutyCycle;
+      // period[i] = allTasks[i].result.period;
       // cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.sn << ", " << allTasks[i].result.period << ", " << allTasks[i].result.dutyCycle << endl;
       // for(auto& pto : T.result)
       // cout << "\t" << pto.first << "\t" << pto.second;
@@ -206,19 +234,19 @@ int main(int argc, char** argv) {
     fout.open("sn.bin", std::ofstream::binary);
     fout.write((const char*) sn, M*M*sizeof(int64_t));
     fout.close();
-
-    fout.open("duty.bin", std::ofstream::binary);
-    fout.write((const char*) duty, M*M*sizeof(double));
-    fout.close();
-
-    fout.open("period.bin", std::ofstream::binary);
-    fout.write((const char*) period, M*M*sizeof(double));
-    fout.close();
+    //
+    // fout.open("duty.bin", std::ofstream::binary);
+    // fout.write((const char*) duty, M*M*sizeof(double));
+    // fout.close();
+    //
+    // fout.open("period.bin", std::ofstream::binary);
+    // fout.write((const char*) period, M*M*sizeof(double));
+    // fout.close();
 
 
     delete [] sn;
-    delete [] duty;
-    delete [] period;
+    // delete [] duty;
+    // delete [] period;
   }
 
   MPI_Finalize();

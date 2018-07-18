@@ -134,16 +134,20 @@ void rk(int nvar, 			// number of variables of dependent variable
 	double t = t0;							// integration time
 	double denseT = t0;							// time for dense output
 
+	double x0[nvar];
+	for(int i=0; i<nvar; ++i) x0[i] = x[i];
 
 
 	// VARIABLES FOR SPIKE NUMBER COMPUTATION
 	double xNext[nvar];
 
-	const int MAX_SPIKES = 63;
+	const int MAX_SPIKES = 100;
 	int nSpikes = 0;
+	int nBeats = 0;
 	double refSpike[nvar];
 	double eventT[MAX_SPIKES+1], eventX[nvar];
-  task.result.sn=1;
+  task.result.sn=0;
+  task.result.bn=0;
 
 
 	// INITIALIZE FSAL STAGE(store in stage 0)
@@ -155,10 +159,10 @@ void rk(int nvar, 			// number of variables of dependent variable
 	char endOfIntegration = 0;	// end of integration flag
 
 
-   // std::cout << denseT;
-   // for(int j=0; j<3; ++j)
-   //     std::cout << "  " << x[j];
-   // std::cout << std::endl;
+   std::cout << denseT;
+   for(int j=0; j<3; ++j)
+       std::cout << "  " << x[j];
+   std::cout << std::endl;
 
 	// MAIN LOOP
 	while(!endOfIntegration) {
@@ -192,32 +196,8 @@ void rk(int nvar, 			// number of variables of dependent variable
 					B6*rkStage[5*nvar+j]);
 
 		// POINCARE SECTION
-    if(event==1) {
-      if(spikePoincare(nvar, t, step, x, xNext, rkStage, tol, pars,
-							eventT[nSpikes], eventX)) {
-				// SPIKE FOUND
-				if(nSpikes == 0) { 	// FIRST SPIKE
-					++nSpikes;
-					for(int j=0; j<nvar; ++j) {
-						refSpike[j] = eventX[j];
-					}
-				} else {
-					normX = fabs(refSpike[0]-eventX[0]);
-					for(int j=1; j<nvar; ++j){
-						if (fabs(refSpike[j] - eventX[j]) > normX) {
-							normX = fabs(refSpike[j] - eventX[j]);
-						}
-					}
-					if(normX < 1.0e-4) {
 
-						// LOOP COMPLETE
-						task.result.period = eventT[1] - eventT[0];
-						return;
-					}
-				}
-			}
-    }
-    if(event==2) { // COMPUTE SPIKES UP TO A MAXIMUM OF 64
+    if(event==2) { // COMPUTE SPIKES UP TO A MAXIMUM OF MAX_SPIKES
       if(spikePoincare(nvar, t, step, x, xNext, rkStage, tol, pars,
 							eventT[nSpikes], eventX)) {
 				// SPIKE FOUND
@@ -225,48 +205,52 @@ void rk(int nvar, 			// number of variables of dependent variable
 					for(int j=0; j<nvar; ++j) {
 						refSpike[j] = eventX[j];
 					}
+					// std::cout << "ref V = " << refSpike[0] << std::endl;
 				} else {
+					// std::cout << "evn V = " << eventX[0] << std::endl;
 					normX = fabs(refSpike[0]-eventX[0]);
-					for(int j=1; j<nvar; ++j){
-						if (fabs(refSpike[j] - eventX[j]) > normX) {
-							normX = fabs(refSpike[j] - eventX[j]);
-						}
-					}
+					// for(int j=1; j<nvar; ++j){
+					// 	if (fabs(refSpike[j] - eventX[j]) > normX) {
+					// 		normX = fabs(refSpike[j] - eventX[j]);
+					// 	}
+					// }
+					// std::cout << "norm = " << normX << std::endl;
 					if(normX < 1.0e-4) {
 						// LOOP COMPLETE
-            task.result.sn &= ~((uint64_t)(1<<0));
-						task.result.sn |= (1 << nSpikes);
-						double relax = eventT[1] - eventT[0];
-						for(int i=2; i<=nSpikes; ++i) {
-							if(eventT[i] - eventT[i-1] > relax)
-								relax = eventT[i] - eventT[i-1];
-            }
-            task.result.period = eventT[nSpikes] - eventT[0];
-						task.result.dutyCycle = task.result.period - relax;
+            task.result.sn = nSpikes;
+						task.result.bn = nBeats;
+						for(int i=0; i<nvar; ++i) {
+							x[i] = x0[i];
+							task.result.orbit[i] = x[i];
+						}
 						return;
 					}
 				}
 				++nSpikes;
+				// std::cout << "pico";
+				if(eventX[0] > 30) {
+					// std::cout << " y latido";
+					++nBeats;
+				}
+				std::cout << " en " << eventT[nSpikes-1] << std::endl;
 				if(nSpikes == MAX_SPIKES) {
-					task.result.sn &= ~((uint64_t)(1<<0));
-					task.result.sn |= ((uint64_t) 1) << 63;
-					task.result.dutyCycle = task.result.period;
-
-          return;
+					task.result.sn = MAX_SPIKES;
+					task.result.bn = MAX_SPIKES;
+          event = 0;
 				}
 			}
     }
 
 
 		// DENSE OUTPUT
-		// while(denseT + denseStep - t - step < 1.0e-15) {
-		// 	denseT += denseStep;
-		// 	double th = (denseT - t) / step;
-    //        std::cout << denseT;
-    //        for(int j=0; j<3; ++j)
-    //            std::cout << "  " << denseEval(nvar, rkStage, x, step, j,th);
-    //        std::cout << std::endl;
-		// }
+		while(denseT + denseStep - t - step < 1.0e-15) {
+			denseT += denseStep;
+			double th = (denseT - t) / step;
+           std::cout << denseT;
+           for(int j=0; j<3; ++j)
+               std::cout << "  " << denseEval(nvar, rkStage, x, step, j,th);
+           std::cout << std::endl;
+		}
 
 
 		// USE THE 5TH ORDER RK TO GO AHEAD(B2 = B7 = 0)
@@ -282,6 +266,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 
 
 		step = fac * step;
+
 
 		// UPDATE FSAL
 		for(int j=0; j<nvar; ++j) rkStage[j] = rkStage[6*nvar+j];
