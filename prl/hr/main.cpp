@@ -216,37 +216,18 @@ int main(int argc, char** argv) {
     cerr << "allTasks size = " << allTasks.size() << endl;
     // OK... print it on screen!
 
-    int64_t *sn = new int64_t[M*M];
-    // double *bn = new double[M*M];
-    // double *orbit = new double[M*M*27];
-
+    FILE *fout = fopen("mierda.txt", "w");
 
     for(int i=0; i<(int)allTasks.size(); ++i) {
-      sn[i] = allTasks[i].result.sn;
-      // duty[i] = allTasks[i].result.dutyCycle;
-      // period[i] = allTasks[i].result.period;
-      // cout << "t[" << i << "] = " << allTasks[i].vthKS << ", " << allTasks[i].Iext << ", " << allTasks[i].result.sn << ", " << allTasks[i].result.period << ", " << allTasks[i].result.dutyCycle << endl;
-      // for(auto& pto : T.result)
-      // cout << "\t" << pto.first << "\t" << pto.second;
+      Task &tsk = allTasks[i];
+      fprintf(fout, "%e %e %llu %llu",
+          tsk.km, tsk.sp, tsk.result.sn, tsk.result.bn);
+      for(int j=0; j<27; ++j)
+        fprintf(fout, " %.12le", tsk.result.orbit[j]);
+      fprintf(fout, "\n");
     }
-    std::ofstream fout;
 
-    fout.open("sn.bin", std::ofstream::binary);
-    fout.write((const char*) sn, M*M*sizeof(int64_t));
-    fout.close();
-    //
-    // fout.open("duty.bin", std::ofstream::binary);
-    // fout.write((const char*) duty, M*M*sizeof(double));
-    // fout.close();
-    //
-    // fout.open("period.bin", std::ofstream::binary);
-    // fout.write((const char*) period, M*M*sizeof(double));
-    // fout.close();
-
-
-    delete [] sn;
-    // delete [] duty;
-    // delete [] period;
+    fclose(fout);
   }
 
   MPI_Finalize();
