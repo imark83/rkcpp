@@ -215,7 +215,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 					// 	}
 					// }
 					// std::cout << "norm = " << normX << std::endl;
-					if(normX < 1.0e-4) {
+					if(normX < 1.0) {
 						// LOOP COMPLETE
             task.result.sn = nSpikes;
 						task.result.bn = nBeats;
@@ -232,7 +232,7 @@ void rk(int nvar, 			// number of variables of dependent variable
 					// std::cout << " y latido";
 					++nBeats;
 				}
-				std::cout << " en " << eventT[nSpikes-1] << std::endl;
+				// std::cout << " en " << eventT[nSpikes-1] << std::endl;
 				if(nSpikes == MAX_SPIKES) {
 					task.result.sn = MAX_SPIKES;
 					task.result.bn = MAX_SPIKES;

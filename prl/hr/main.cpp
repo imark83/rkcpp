@@ -17,7 +17,7 @@
 
 
 
-const int M = 8; // Number of points per dimension
+const int M = 2; // Number of points per dimension
 const int max_chunkSize = M; // Max number of allTasks sent to a worker
 const double g_km[] = {87.0, 88.0};
 const double g_sp[] = {1400.0, 1401.0};
