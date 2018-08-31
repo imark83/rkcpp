@@ -92,7 +92,6 @@ def torify(x, y):
 
 
 # CODIGO QUE LEE Y DIBUJA
-filename = "output/hexpider.txt"
 
 with open(filename, 'r') as infile:
     desfases = set( float(l.strip().split('\t')[0]) for l in infile.readlines() )
@@ -133,5 +132,11 @@ plt.axis('scaled')
 
 plt.xlim([0,1])
 plt.ylim([0,1])
-# plt.savefig('/Users/alvaro/{}.png'.format(r))
-plt.show()
+
+# SALVAR LA FIGURA EN DISCO
+plt.savefig('hr-hexpider.png')
+
+
+
+# VISUALIZAR LA FIGURA
+# plt.show()
