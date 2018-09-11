@@ -37,8 +37,6 @@ void f(double t, double *rop, double *x, double *p) {
 
   // COUPLING
 
-  const double EPOST = -2.0;
-  const double ETH = -1.2;
 
   aux[ 0] += p[2]*(x[ 0]-EPOST) * (sigmoid(x[3]-ETH) + sigmoid(x[9]-ETH));
   aux[ 3] += p[2]*(x[ 3]-EPOST) * (0.5*sigmoid(x[0]-ETH)
