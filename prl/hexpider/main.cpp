@@ -11,8 +11,9 @@
 
 
 const int M = 30; // Number of points per dimension
-const double vthks = -27.0;
-const double Iext = 35.5;
+double vthks = -27.0;
+double Iext = 35.5;
+double r = 0.5;
 
 using namespace std;
 
@@ -40,6 +41,12 @@ typedef struct {
 void work(double phi21, double phi31, deque<pair<int, double> > &result);
 
 int main(int argc, char** argv) {
+
+  if(argc > 1)
+    vthks = atof(argv[1]);
+
+  if(argc > 2)
+    r = atof(argv[2]);
 
   // MPI STUFF
   int proc_id, world_size, bufferLength;
@@ -219,8 +226,6 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
   // result.push_back(make_pair(2, 2.5));
   //
   // return;
-
-  double r = 0.5;
 
   int nvar = 24;
   double y[nvar];
