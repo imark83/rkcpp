@@ -268,50 +268,25 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
   double z[nvar];     // variables to rock & roll the neuron
 
 
-  // SET NEURON (0,0)
-  for(int i=0; i<3; ++i) {
-    x[i] = z[i] = y[i];
-  }
-  x[18] = z[18] = y[18];
-
-
-  // SET NEURON (1,0)
-  rk(nvar, z, 0.0, (P*(r)), (P*(r)),
-      pars, 1.0e-8, 0, poincareThresHold);
-  for(int i=0; i<3; ++i) {
-    x[9+i] = z[i];
-  }
-  z[21] = z[18];
-
-
-
   // SET NEURON (0,1)
-  for(int i=0; i<3; ++i){
-    z[i] = y[i];
+  for(int i=0; i<3; ++i) {
+    x[3+i] = z[i] = y[i];
   }
-  z[18] = y[18];
+  x[19] = z[19] = y[19];
+
+
+  // SET NEURON (0,0)
   rk(nvar, z, 0.0, (P*(1.0-phi21)), (P*(1.0-phi21)),
       pars, 1.0e-8, 0, poincareThresHold);
-  for(int i=0; i<3; ++i)
-    x[3+i] = z[i];
-  x[19] = z[18];
-
-
-  // SET NEURON (1,1)
-  for(int i=0; i<3; ++i){
-    z[i] = y[i];
+  for(int i=0; i<3; ++i) {
+    x[i] = z[i];
   }
-  z[18] = y[18];
-  rk(nvar, z, 0.0, (P*(1.0-phi21+r)), (P*(1.0-phi21+r)),
-      pars, 1.0e-8, 0, poincareThresHold);
-  for(int i=0; i<3; ++i)
-    x[12+i] = z[i];
-  x[22] = z[18];
+  z[18] = z[18];
 
 
 
   // SET NEURON (0,2)
-  for(int i=0; i<3; ++i) {
+  for(int i=0; i<3; ++i){
     z[i] = y[i];
   }
   z[18] = y[18];
@@ -320,6 +295,31 @@ void work(double phi21, double phi31, deque<pair<int, double> > &result) {
   for(int i=0; i<3; ++i)
     x[6+i] = z[i];
   x[20] = z[18];
+
+
+  // SET NEURON (1,1)
+  for(int i=0; i<3; ++i){
+    z[i] = y[i];
+  }
+  z[18] = y[18];
+  rk(nvar, z, 0.0, (P*r), (P*r),
+      pars, 1.0e-8, 0, poincareThresHold);
+  for(int i=0; i<3; ++i)
+    x[12+i] = z[i];
+  x[22] = z[18];
+
+
+
+  // SET NEURON (1,0)
+  for(int i=0; i<3; ++i) {
+    z[i] = y[i];
+  }
+  z[18] = y[18];
+  rk(nvar, z, 0.0, (P*(1.0-phi21+r)), (P*(1.0-phi21+r)),
+      pars, 1.0e-8, 0, poincareThresHold);
+  for(int i=0; i<3; ++i)
+    x[9+i] = z[i];
+  x[21] = z[18];
 
   // SET NEURON (1,2)
   for(int i=0; i<3; ++i) {
