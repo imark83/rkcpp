@@ -10,7 +10,7 @@
 #include "rk.hpp"
 
 
-const int M = 40; // Number of points per dimension
+const int M = 30; // Number of points per dimension
 const double vthks = -27.0;
 const double Iext = 35.5;
 
